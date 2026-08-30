@@ -1,0 +1,26 @@
+node_modules/
+dist/
+.env
+.env.local
+.firebase/
+firebase-debug.log
+backups/*.dump
+
+
+
+# Dépendances
+node_modules/
+frontend/node_modules/
+
+# Dossiers de compilation
+dist/
+frontend/dist/
+
+# Fichiers d'environnement secrets
+.env
+.env.local
+frontend/.env
+frontend/.env.local
+
+# Cache Firebase
+.firebase/
