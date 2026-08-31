@@ -1,8 +1,25 @@
+# name: Supabase Keep-Alive
+# on:
+#   schedule:
+#     - cron: "0 6 */5 * *" # Tous les 5 jours à 06:00 UTC
+#   workflow_dispatch:
+
+# jobs:
+#   ping:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Ping Supabase API
+#         run: |
+#           curl -f -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/chefs_de_projet?select=id&limit=1" \
+#             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+#             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+
+
 name: Supabase Keep-Alive
 on:
   schedule:
-    - cron: "0 6 */5 * *" # Tous les 5 jours à 06:00 UTC
-  workflow_dispatch:
+    - cron: "0 6 */4 * *" # S'exécute tous les 4 jours à 06:00 UTC
+  workflow_dispatch: # Permet de tester manuellement depuis l'interface GitHub
 
 jobs:
   ping:
@@ -10,6 +27,6 @@ jobs:
     steps:
       - name: Ping Supabase API
         run: |
-          curl -f -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/chefs_de_projet?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+          curl -f -X GET "https://qmyctkgvbfgcwffexkqh.supabase.co/rest/v1/chefs_de_projet?select=id&limit=1" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY }}"
