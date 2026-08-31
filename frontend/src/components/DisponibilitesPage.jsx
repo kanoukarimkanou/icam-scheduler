@@ -1600,7 +1600,7 @@ function ChefCard({
 
         <div className="chef-meta">
           <div className="chef-name">{chef.nom}</div>
-          <div className="chef-specialite">{chef.specialite || 'Spécialité générale'} · {chef.email}</div>
+          {/* <div className="chef-specialite">{chef.specialite || 'Spécialité générale'} · {chef.email}</div> */}
         </div>
 
         <Sparkline slots={slots} />
