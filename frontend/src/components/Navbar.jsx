@@ -244,7 +244,7 @@ const ADMIN_LINKS = [
   { to: '/disponibilites', label: 'Dispo. Chefs', icon: '🗓️' },
   { to: '/disponibilites-etudiants', label: 'Dispo. Étudiants', icon: '📅' },
   { to: '/selectionpage', label: 'Sélections', icon: '✅' },
-  { to: '/ProjectAssignment', label: 'Affectations', icon: '🎯' },
+  // { to: '/ProjectAssignment', label: 'Affectations', icon: '🎯' },
   { to: '/rendez-vous', label: 'Rendez-vous', icon: '🤝' },
   { to: '/evaluations', label: 'Évaluations', icon: '📝' },
 ];
