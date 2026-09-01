@@ -836,46 +836,46 @@ export default function ParametresCompetencesPage() {
         
         .comp-table {
         font-size: 0.84rem;
-        background: #1e293b !important;
-        color: #ffffff !important;
+        background: #0b1f3a !important;
+        color: #39ff88 !important;
         border-collapse: separate;
         border-spacing: 0;
         }
 
         .comp-table thead th {
-        background: #111827 !important;
-        color: #cbd5e1 !important;
+        background: #07172b !important;
+        color: #39ff88 !important;
         font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         font-weight: 700;
         padding: 0.75rem 0.85rem;
-        border-bottom: 2px solid rgba(41, 211, 211, 0.35) !important;
+        border-bottom: 2px solid #39ff88 !important;
         }
 
         .comp-table tbody tr {
-        background: #1e293b !important;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        background: #0b1f3a !important;
+        border-bottom: 1px solid rgba(57, 255, 136, 0.18);
         transition: background-color 0.15s ease;
         }
 
         .comp-table tbody tr:hover {
-        background-color: #334155 !important;
+        background-color: #12345a !important;
         }
 
         .comp-table tbody td {
         padding: 0.65rem 0.85rem;
         vertical-align: middle;
-        color: #ffffff !important;
+        color: #39ff88 !important;
         }
 
         .comp-table .text-white,
         .comp-table .text-light {
-        color: #ffffff !important;
+        color: #39ff88 !important;
         }
 
         .comp-table .text-muted {
-        color: #94a3b8 !important;
+        color: #7ee2a8 !important;
         }
         .comp-order-badge {
           display: inline-flex;
