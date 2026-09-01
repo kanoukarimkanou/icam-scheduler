@@ -6356,7 +6356,7 @@ export default function RendezVousPage() {
           left: 0;
           z-index: 4;
           text-align: left;
-          min-width: 250px;
+          min-width: 150px;
           background: #0f1524 !important;
           border-right: 1px solid var(--border-strong) !important;
         }
@@ -6399,7 +6399,7 @@ export default function RendezVousPage() {
           z-index: 2;
           background: #111729 !important;
           border-right: 1px solid var(--border-strong);
-          min-width: 250px;
+          min-width: 150px;
         }
         .matrix-table tbody tr:hover td.matrix-student-cell {
           background: #141c33 !important;
@@ -6897,8 +6897,11 @@ export default function RendezVousPage() {
                     {matrixChefs.map((chef) => (
                       <th key={chef} className="matrix-chef-col">
                         <div className="matrix-chef-header">
-                          <span className="chef-avatar-icon-sm">{chef.charAt(0)}</span>
-                          <span className="matrix-chef-name">{chef}</span>
+                          {/* <span className="chef-avatar-icon-sm">{chef.charAt(0)}</span> */}
+                          {/* <span className="matrix-chef-name">{chef}</span> */}
+                          <span className="matrix-chef-name">
+                            {chef.substring(0, 3).toUpperCase()}
+                          </span>
                         </div>
                       </th>
                     ))}
@@ -6985,8 +6988,14 @@ export default function RendezVousPage() {
                             {cellRdvs.length ? (
                               cellRdvs.map((r) => (
                                 <div key={r.id} className="matrix-slot">
-                                  <span className="matrix-slot-date">{r.date}</span>
-                                  <span className="matrix-slot-time">{r.heure_debut} – {r.heure_fin}</span>
+                                  {/* <span className="matrix-slot-date">{r.date}</span> */}
+                                  <span className="matrix-slot-date">
+                                    {new Date(r.date).toLocaleDateString('fr-FR', {
+                                      day: '2-digit',
+                                      month: '2-digit'
+                                    })}
+                                  </span>
+                                  <span className="matrix-slot-time">{r.heure_debut}</span>
                                 </div>
                               ))
                             ) : (
