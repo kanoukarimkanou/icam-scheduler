@@ -7664,10 +7664,10 @@ export default function RendezVousPage() {
           left: 0;
           z-index: 5;
           text-align: left;
-          width: 170px;
-          min-width: 170px;
-          max-width: 170px;
-          padding: 0.55rem 0.6rem;
+          width: 130px;
+          min-width: 130px;
+          max-width: 130px;
+          padding: 0.55rem 0.5rem;
           background: #0f1524 !important;
           border-right: 1px solid var(--border-strong) !important;
         }
@@ -7696,10 +7696,10 @@ export default function RendezVousPage() {
           z-index: 2;
           background: #111729 !important;
           border-right: 1px solid var(--border-strong);
-          width: 170px;
-          min-width: 170px;
-          max-width: 170px;
-          padding: 0.5rem 0.6rem;
+          width: 130px;
+          min-width: 130px;
+          max-width: 130px;
+          padding: 0.5rem 0.5rem;
         }
         .matrix-table tbody tr:hover td.matrix-student-cell {
           background: #141c33 !important;
@@ -7711,11 +7711,11 @@ export default function RendezVousPage() {
         .matrix-student-info {
           overflow: hidden;
         }
-        .matrix-student-info .student-name-link,
-        .matrix-student-info > div {
+        .matrix-student-info .student-name-link {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          display: block;
         }
 
         .matrix-cell {
@@ -7736,10 +7736,21 @@ export default function RendezVousPage() {
         }
         .matrix-slot {
           font-family: 'JetBrains Mono', monospace;
-          font-weight: 700;
-          color: #38bdf8;
-          font-size: 0.76rem;
           cursor: default;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1px;
+        }
+        .matrix-slot-date {
+          font-size: 0.6rem;
+          color: var(--text-muted);
+          font-weight: 600;
+        }
+        .matrix-slot-time {
+          font-size: 0.78rem;
+          color: #38bdf8;
+          font-weight: 700;
         }
         .matrix-slot + .matrix-slot {
           margin-top: 3px;
@@ -8223,10 +8234,7 @@ export default function RendezVousPage() {
                               </span>
                               <div className="matrix-student-info">
                                 <div className="student-name-link">
-                                  {student.nom} 📊
-                                </div>
-                                <div className="text-muted small font-monospace" style={{ fontSize: '0.68rem' }}>
-                                  {student.email}
+                                  {student.nom}
                                 </div>
                               </div>
                             </div>
@@ -8271,7 +8279,6 @@ export default function RendezVousPage() {
                         ) : (
                           <div>
                             <div className="fw-bold" style={{ color: 'var(--text-primary)' }}>{student.nom}</div>
-                            <div className="text-muted small font-monospace" style={{ fontSize: '0.72rem' }}>{student.email}</div>
                           </div>
                         )}
                       </td>
@@ -8291,7 +8298,8 @@ export default function RendezVousPage() {
                                   className="matrix-slot"
                                   title={`${r.date} · ${r.heure_debut} – ${r.heure_fin}`}
                                 >
-                                  {formatShortDate(r.date)}
+                                  <span className="matrix-slot-date">{formatShortDate(r.date)}</span>
+                                  <span className="matrix-slot-time">{r.heure_debut}</span>
                                 </div>
                               ))
                             ) : (
