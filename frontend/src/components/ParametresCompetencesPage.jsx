@@ -990,6 +990,11 @@ export default function ParametresCompetencesPage() {
           color: var(--text-primary) !important;
           border-radius: 8px;
         }
+        /* Labels du formulaire en blanc */
+        .comp-form-label {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        }
         .comp-input:focus {
           border-color: var(--accent-cyan) !important;
           box-shadow: 0 0 0 3px var(--accent-cyan-soft) !important;
@@ -1053,7 +1058,7 @@ export default function ParametresCompetencesPage() {
 
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-2">
-                  <Form.Label className="small text-muted fw-bold">Libellé affiché sur le Radar *</Form.Label>
+                  <Form.Label className="small comp-form-label">Libellé affiché sur le Radar *</Form.Label>
                   <Form.Control
                     size="sm"
                     className="comp-input"
@@ -1065,7 +1070,7 @@ export default function ParametresCompetencesPage() {
                 </Form.Group>
 
                 <Form.Group className="mb-2">
-                  <Form.Label className="small text-muted fw-bold">Code technique (identifiant) *</Form.Label>
+                  <Form.Label className="small comp-form-label">Code technique (identifiant) *</Form.Label>
                   <Form.Control
                     size="sm"
                     className="comp-input font-monospace"
@@ -1075,14 +1080,17 @@ export default function ParametresCompetencesPage() {
                     required
                     disabled={Boolean(editingComp)}
                   />
-                  <small className="text-muted font-monospace" style={{ fontSize: '0.7rem' }}>
+                  <small
+                    className="font-monospace"
+                    style={{ fontSize: '0.7rem', color: '#ffffff' }}
+                    >
                     Utilisé pour les correspondances Moodle/CSV.
-                  </small>
+                    </small>
                 </Form.Group>
 
                 <Row className="g-2 mb-2">
                   <Col xs={6}>
-                    <Form.Label className="small text-muted fw-bold">Ordre (position)</Form.Label>
+                    <Form.Label className="small comp-form-label">Ordre (position)</Form.Label>
                     <Form.Control
                       type="number"
                       size="sm"
@@ -1105,7 +1113,7 @@ export default function ParametresCompetencesPage() {
                 </Row>
 
                 <Form.Group className="mb-3">
-                  <Form.Label className="small text-muted fw-bold">Description / Thématiques couvertes</Form.Label>
+                  <Form.Label className="small comp-form-label">Description / Thématiques couvertes</Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={2}
