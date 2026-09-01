@@ -833,40 +833,50 @@ export default function ParametresCompetencesPage() {
         }
 
         /* ===== Tableau des compétences — style pro moderne ===== */
+        
         .comp-table {
-          font-size: 0.84rem;
-          background: #0b0f1c !important;
-          color: #cbd5e1 !important;
-          border-collapse: separate;
-          border-spacing: 0;
-        }
-        .comp-table thead th {
-          background: #090c16 !important;
-          color: var(--text-muted) !important;
-          font-size: 0.72rem;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          font-weight: 700;
-          padding: 0.75rem 0.85rem;
-          border-bottom: 2px solid rgba(41, 211, 211, 0.35) !important;
-        }
-        .comp-table tbody tr {
-          background: #0b0f1c;
-          border-bottom: 1px solid var(--border-subtle);
-          transition: background-color 0.15s ease;
-        }
-        .comp-table tbody tr:hover {
-          background-color: #131a2c !important;
-        }
-        .comp-table tbody td {
-          padding: 0.65rem 0.85rem;
-          vertical-align: middle;
-        }
-        .comp-table .text-white,
-        .comp-table .text-light {
-          color: #cbd5e1 !important;
+        font-size: 0.84rem;
+        background: #1e293b !important;
+        color: #ffffff !important;
+        border-collapse: separate;
+        border-spacing: 0;
         }
 
+        .comp-table thead th {
+        background: #111827 !important;
+        color: #cbd5e1 !important;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        padding: 0.75rem 0.85rem;
+        border-bottom: 2px solid rgba(41, 211, 211, 0.35) !important;
+        }
+
+        .comp-table tbody tr {
+        background: #1e293b !important;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        transition: background-color 0.15s ease;
+        }
+
+        .comp-table tbody tr:hover {
+        background-color: #334155 !important;
+        }
+
+        .comp-table tbody td {
+        padding: 0.65rem 0.85rem;
+        vertical-align: middle;
+        color: #ffffff !important;
+        }
+
+        .comp-table .text-white,
+        .comp-table .text-light {
+        color: #ffffff !important;
+        }
+
+        .comp-table .text-muted {
+        color: #94a3b8 !important;
+        }
         .comp-order-badge {
           display: inline-flex;
           align-items: center;
