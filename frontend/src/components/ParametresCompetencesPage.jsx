@@ -835,13 +835,13 @@ export default function ParametresCompetencesPage() {
         /* ===== Tableau des compétences — style pro moderne ===== */
         .comp-table {
           font-size: 0.84rem;
-          background: transparent !important;
-          color: var(--text-primary) !important;
+          background: #0b0f1c !important;
+          color: #cbd5e1 !important;
           border-collapse: separate;
           border-spacing: 0;
         }
         .comp-table thead th {
-          background: var(--panel-solid) !important;
+          background: #090c16 !important;
           color: var(--text-muted) !important;
           font-size: 0.72rem;
           text-transform: uppercase;
@@ -851,15 +851,20 @@ export default function ParametresCompetencesPage() {
           border-bottom: 2px solid rgba(41, 211, 211, 0.35) !important;
         }
         .comp-table tbody tr {
+          background: #0b0f1c;
           border-bottom: 1px solid var(--border-subtle);
           transition: background-color 0.15s ease;
         }
         .comp-table tbody tr:hover {
-          background-color: rgba(124, 108, 246, 0.07) !important;
+          background-color: #131a2c !important;
         }
         .comp-table tbody td {
           padding: 0.65rem 0.85rem;
           vertical-align: middle;
+        }
+        .comp-table .text-white,
+        .comp-table .text-light {
+          color: #cbd5e1 !important;
         }
 
         .comp-order-badge {
