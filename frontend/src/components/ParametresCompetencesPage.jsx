@@ -835,49 +835,81 @@ export default function ParametresCompetencesPage() {
         /* ===== Tableau des compétences — style pro moderne ===== */
         
         .comp-table {
+        --bs-table-bg: #0d2340 !important;
+        --bs-table-color: #4ade80 !important;
+        --bs-table-hover-bg: #163b63 !important;
+        --bs-table-hover-color: #4ade80 !important;
+
         font-size: 0.84rem;
-        background: #0b1f3a !important;
-        color: #39ff88 !important;
+        background-color: #0d2340 !important;
+        color: #4ade80 !important;
         border-collapse: separate;
         border-spacing: 0;
         }
 
+        /* En-tête */
         .comp-table thead th {
-        background: #07172b !important;
-        color: #39ff88 !important;
+        background-color: #081a30 !important;
+        color: #4ade80 !important;
+
         font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         font-weight: 700;
+
         padding: 0.75rem 0.85rem;
-        border-bottom: 2px solid #39ff88 !important;
+
+        border-bottom: 2px solid #4ade80 !important;
         }
 
+        /* Lignes */
         .comp-table tbody tr {
-        background: #0b1f3a !important;
-        border-bottom: 1px solid rgba(57, 255, 136, 0.18);
+        --bs-table-bg: #0d2340 !important;
+        --bs-table-color: #4ade80 !important;
+
+        background-color: #0d2340 !important;
+        color: #4ade80 !important;
+
+        border-bottom: 1px solid rgba(74, 222, 128, 0.18);
+
         transition: background-color 0.15s ease;
         }
 
+        /* Survol */
         .comp-table tbody tr:hover {
-        background-color: #12345a !important;
+        --bs-table-hover-bg: #163b63 !important;
+
+        background-color: #163b63 !important;
+        color: #4ade80 !important;
         }
 
+        /* Cellules */
         .comp-table tbody td {
+        background-color: #0d2340 !important;
+        color: #4ade80 !important;
+
         padding: 0.65rem 0.85rem;
         vertical-align: middle;
-        color: #39ff88 !important;
+
+        border-color: rgba(74, 222, 128, 0.15) !important;
         }
 
+        /* Cellules au survol */
+        .comp-table tbody tr:hover td {
+        background-color: #163b63 !important;
+        color: #4ade80 !important;
+        }
+
+        /* Texte Bootstrap text-white / text-light */
         .comp-table .text-white,
         .comp-table .text-light {
-        color: #39ff88 !important;
+        color: #4ade80 !important;
         }
 
+        /* Description */
         .comp-table .text-muted {
-        color: #7ee2a8 !important;
-        }
-        .comp-order-badge {
+        color: #86efac !important;
+        }        .comp-order-badge {
           display: inline-flex;
           align-items: center;
           justify-content: center;
