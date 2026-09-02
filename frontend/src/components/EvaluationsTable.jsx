@@ -15621,7 +15621,7 @@ export default function EvaluationsTable() {
             }
             aria-label={`Affecter ${fullName} à ${c.nom}`}
           >
-            {rankText}
+            {/* {rankText} */}  {rankText}{isAssignedToThisChef && ' ✓'}
           </span>
         )}
 
