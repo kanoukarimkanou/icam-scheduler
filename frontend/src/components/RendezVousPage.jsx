@@ -9286,9 +9286,9 @@ export default function RendezVousPage() {
         //   box-shadow: inset 3px 0 0 #60a5fa !important;
         // }
         .chef-view .matrix-cell-filled {
-          background: #0b3d91 !important;
-          box-shadow: inset 3px 0 0 #38bdf8 !important;
-        }
+  background: #111729 !important;
+  box-shadow: inset 3px 0 0 #2563eb !important;
+}
       `}</style>
 
       <Navbar />
