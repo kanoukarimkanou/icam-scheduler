@@ -14750,18 +14750,33 @@ export default function EvaluationsTable() {
           z-index: 5;
           border-bottom: 2px solid var(--accent-violet-soft);
         }
+        // .col-student {
+        //   position: sticky;
+        //   left: 0;
+        //   z-index: 6;
+        //   background: var(--panel-solid);
+        //   text-align: left !important;
+        //   width: ${firstColWidth}px;
+        //   min-width: ${firstColWidth}px;
+        //   max-width: ${firstColWidth}px;
+        //   border-right: 2px solid rgba(124, 108, 246, 0.35);
+        // }
         .col-student {
-          position: sticky;
-          left: 0;
-          z-index: 6;
-          background: var(--panel-solid);
-          text-align: left !important;
-          width: ${firstColWidth}px;
-          min-width: ${firstColWidth}px;
-          max-width: ${firstColWidth}px;
-          border-right: 2px solid rgba(124, 108, 246, 0.35);
-        }
-        thead .col-student { z-index: 15; }
+            position: sticky;
+            left: 0;
+            z-index: 6;
+            background: var(--panel-solid) !important;   /* ← !important ajouté */
+            text-align: left !important;
+            width: ${firstColWidth}px;
+            min-width: ${firstColWidth}px;
+            max-width: ${firstColWidth}px;
+            border-right: 2px solid rgba(124, 108, 246, 0.35);
+          }
+        // thead .col-student { z-index: 15; }
+        thead .col-student {
+              z-index: 15;
+              background: var(--panel-solid) !important;   /* ← on force ici aussi */
+            }
         .col-chef {
           width: ${chefColWidth}px;
           min-width: ${chefColWidth}px;
@@ -15014,17 +15029,6 @@ export default function EvaluationsTable() {
           .chef-card-header-row { padding: 0.85rem 0.9rem; }
           .chef-card-body-row { padding: 0.85rem 0.9rem; }
         }
-          .chef-view .matrix-student-cell {
-  background: #111729 !important;
-}
-
-.chef-view tbody tr:hover .matrix-student-cell {
-  background: #111729 !important;
-}
-
-.chef-view .student-name-link {
-  color: #22c55e !important;
-}
       `}</style>
 
       <Navbar />
