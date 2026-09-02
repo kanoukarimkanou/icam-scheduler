@@ -9051,7 +9051,13 @@ export default function RendezVousPage() {
           color: var(--text-faint);
           font-size: 0.95rem;
         }
+        .chef-view .matrix-slot-date {
+          color: #22c55e !important;
+        }
 
+        .chef-view .matrix-slot-time {
+          color: #22c55e !important;
+        }
         .time-pill {
           background: rgba(6, 182, 212, 0.12);
           border: 1px solid rgba(6, 182, 212, 0.35);
@@ -9259,11 +9265,23 @@ export default function RendezVousPage() {
           justify-content: space-between;
           align-items: center;
         }
+          .chef-view .matrix-table tbody tr {
+            border-bottom: 1px solid #2563eb !important;
+          }
+
+          .chef-view .matrix-cell {
+            border-left: 1px solid #2563eb !important;
+          }
+
+          .chef-view .matrix-table tbody td.matrix-student-cell {
+            border-right: 1px solid #2563eb !important;
+          }
       `}</style>
 
       <Navbar />
 
-      <div className="wow-container">
+      {/* <div className="wow-container"> */}
+      <div className={`wow-container ${isChef ? 'chef-view' : ''}`}>
         {/* Titre & Barre d'actions */}
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
