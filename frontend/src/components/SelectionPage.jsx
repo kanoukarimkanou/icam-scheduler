@@ -8413,8 +8413,14 @@ const getRankBadgeStyle = (rank) => {
 
 const rankLabel = (rank) => (Number(rank) === 1 ? '1er' : `${rank}e`);
 
-const chefInitials = (nom = '') => nom.replace(/\s+/g, '').slice(0, 4).toUpperCase();
-
+// const chefInitials = (nom = '') => nom.replace(/\s+/g, '').slice(0, 4).toUpperCase();
+const chefInitials = (nom = '') =>
+  nom
+    .replace(/Ã©/gi, 'E')
+    .replace(/Ã/gi, 'A')
+    .replace(/\s+/g, '')
+    .slice(0, 4)
+    .toUpperCase();
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < breakpoint
