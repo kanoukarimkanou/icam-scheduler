@@ -576,16 +576,16 @@ const ADMIN_LINKS = [
   { to: '/disponibilites', label: 'Dispo. Chefs', icon: '🗓️' },
   { to: '/disponibilites-etudiants', label: 'Dispo. Étudiants', icon: '📅' },
   { to: '/selectionpage', label: 'Sélections', icon: '✅' },
-  { to: '/rendez-vous', label: 'Rendez-vous', icon: '🤝' },
+  { to: '/rendez-vous', label: 'Rendez-vous', icon: ' ' },
   { to: '/evaluations', label: 'Évaluations', icon: '📝' },
 ];
 
 const CHEF_LINKS = [
-  { to: '/rendez-vous', label: 'Mes rendez-vous', icon: '🤝' },
+  { to: '/rendez-vous', label: 'Mes rendez-vous', icon: ' ' },
   { to: '/evaluations', label: 'Mes évaluations', icon: '📝' },
 ];
 
-const STUDENT_LINKS = [{ to: '/rendez-vous', label: 'Mes rendez-vous', icon: '🤝' }];
+const STUDENT_LINKS = [{ to: '/rendez-vous', label: 'Mes rendez-vous', icon: ' ' }];
 
 export default function Navbar() {
   const { currentUser, isAdmin, isChef, chefInfo, logout } = useAuth();
@@ -795,7 +795,7 @@ export default function Navbar() {
               }}
               title="Remise à zéro complète de la base de données, du Storage et des cookies"
             >
-              <span>⚡</span>
+              <span> </span>
               <span>Reset Global</span>
             </button>
           )}
@@ -816,7 +816,7 @@ export default function Navbar() {
       >
         <Modal.Header closeButton closeVariant="white">
           <Modal.Title style={{ fontSize: '1.2rem', color: '#f87171', fontWeight: 800 }}>
-            ⚠️ Remise à Zéro Totale de l'Application
+             Remise à Zéro Totale de l'Application
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
@@ -850,7 +850,7 @@ export default function Navbar() {
           </div>
 
           <p className="text-muted small mb-0">
-            ⚠️ Cette action est irréversible et effacera toutes les données de la session terminée.
+             Cette action est irréversible et effacera toutes les données de la session terminée.
           </p>
         </Modal.Body>
         <Modal.Footer>
