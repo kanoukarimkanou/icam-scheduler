@@ -4717,6 +4717,49 @@ export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
 // };
 
 
+// // Décodage HTML et nettoyage robuste pour Moodle
+// export const decodeHtmlEntities = (str) => {
+//   return (str || '')
+//     .replace(/&#039;/g, "'")
+//     .replace(/&amp;/g, '&')
+//     .replace(/&quot;/g, '"')
+//     .replace(/&lt;/g, '<')
+//     .replace(/&gt;/g, '>');
+// };
+
+// export const findChefFromWishText = (wishText, chefsList) => {
+//   if (!wishText || !chefsList || chefsList.length === 0) return null;
+
+//   const raw = decodeHtmlEntities(String(wishText)).trim();
+
+//   // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
+//   const bracketMatch = raw.match(/\[([^\]]+)\]/);
+//   const target = bracketMatch ? bracketMatch[1] : raw;
+
+//   const cleanedTarget = cleanTextForMatching(target);
+//   if (!cleanedTarget) return null;
+
+//   // 2. Correspondance par nom de famille du chef
+//   const found = chefsList.find((c) => {
+//     const nomComplet = cleanTextForMatching(c.nom);
+//     const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
+//     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || '');
+
+//     return (
+//       (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
+//       (nomDeFamille && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget)))
+//     );
+//   });
+
+//   if (found) return found;
+
+//   // 3. Fallback : correspondance par spécialité
+//   return chefsList.find((c) => {
+//     const spec = cleanTextForMatching(c.specialite);
+//     return spec && cleanTextForMatching(raw).includes(spec);
+//   }) || null;
+// };
+
 // Décodage HTML et nettoyage robuste pour Moodle
 export const decodeHtmlEntities = (str) => {
   return (str || '')
@@ -4724,7 +4767,10 @@ export const decodeHtmlEntities = (str) => {
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+    .replace(/&gt;/g, '>')
+    .replace(/Ã©/gi, 'e')
+    .replace(/Ã¨/gi, 'e')
+    .replace(/Ã/gi, 'a');
 };
 
 export const findChefFromWishText = (wishText, chefsList) => {
@@ -4732,31 +4778,53 @@ export const findChefFromWishText = (wishText, chefsList) => {
 
   const raw = decodeHtmlEntities(String(wishText)).trim();
 
-  // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
+  // 1. Détection du texte entre crochets [M. BONNAL], [O. QUENARD], [S. LOUIS]
   const bracketMatch = raw.match(/\[([^\]]+)\]/);
   const target = bracketMatch ? bracketMatch[1] : raw;
 
-  const cleanedTarget = cleanTextForMatching(target);
+  const cleanedTarget = cleanTextForMatching(
+    decodeHtmlEntities(target)
+  );
   if (!cleanedTarget) return null;
 
-  // 2. Correspondance par nom de famille du chef
+  // Cas spécifique 1 : [S. LOUIS] correspond à Louis SAGE
+  if (cleanedTarget.includes('louis') || cleanedTarget.includes('slouis')) {
+    const sageChef = chefsList.find((c) => {
+      const nom = cleanTextForMatching(decodeHtmlEntities(c.nom));
+      return nom.includes('sage') || nom.includes('louis');
+    });
+    if (sageChef) return sageChef;
+  }
+
+  // Cas spécifique 2 : [O. QUENARD] correspond à Olivier Quénard
+  if (cleanedTarget.includes('quenard') || cleanedTarget.includes('quanard')) {
+    const quenardChef = chefsList.find((c) => {
+      const nom = cleanTextForMatching(decodeHtmlEntities(c.nom));
+      return nom.includes('quenard') || nom.includes('quanard');
+    });
+    if (quenardChef) return quenardChef;
+  }
+
+  // 2. Correspondance générale (Nom complet, Nom de famille ou Prénom)
   const found = chefsList.find((c) => {
-    const nomComplet = cleanTextForMatching(c.nom);
-    const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
+    const nomClean = cleanTextForMatching(decodeHtmlEntities(c.nom));
+    const parts = decodeHtmlEntities(c.nom).toLowerCase().split(/\s+/).filter(Boolean);
     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || '');
+    const prenom = cleanTextForMatching(parts[0] || '');
 
     return (
-      (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
-      (nomDeFamille && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget)))
+      (nomClean && (cleanedTarget.includes(nomClean) || nomClean.includes(cleanedTarget))) ||
+      (nomDeFamille && nomDeFamille.length >= 3 && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget))) ||
+      (prenom && prenom.length >= 4 && cleanedTarget.includes(prenom))
     );
   });
 
   if (found) return found;
 
-  // 3. Fallback : correspondance par spécialité
+  // 3. Fallback par spécialité
   return chefsList.find((c) => {
-    const spec = cleanTextForMatching(c.specialite);
-    return spec && cleanTextForMatching(raw).includes(spec);
+    const spec = cleanTextForMatching(decodeHtmlEntities(c.specialite || ''));
+    return spec && spec.length >= 4 && cleanTextForMatching(raw).includes(spec);
   }) || null;
 };
 
