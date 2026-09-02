@@ -9276,14 +9276,18 @@ export default function RendezVousPage() {
           .chef-view .matrix-table tbody td.matrix-student-cell {
             border-right: 1px solid #2563eb !important;
           }
-            .chef-view .matrix-cell-filled {
-          background: linear-gradient(
-            135deg,
-            #1e40af,
-            #2563eb
-          ) !important;
+        //     .chef-view .matrix-cell-filled {
+        //   background: linear-gradient(
+        //     135deg,
+        //     #1e40af,
+        //     #2563eb
+        //   ) !important;
 
-          box-shadow: inset 3px 0 0 #60a5fa !important;
+        //   box-shadow: inset 3px 0 0 #60a5fa !important;
+        // }
+        .chef-view .matrix-cell-filled {
+          background: #0b3d91 !important;
+          box-shadow: inset 3px 0 0 #38bdf8 !important;
         }
       `}</style>
 
