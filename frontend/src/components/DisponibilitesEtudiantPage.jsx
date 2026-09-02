@@ -1848,7 +1848,7 @@ export default function DisponibilitesEtudiantPage() {
                 onClick={() => setShowResetModal(true)}
                 disabled={resetting}
               >
-                <span>🗑️</span>
+                <span></span>
                 <span>Réinitialiser...</span>
               </Button>
 
@@ -1965,7 +1965,7 @@ export default function DisponibilitesEtudiantPage() {
       <Modal show={showResetModal} onHide={() => setShowResetModal(false)} centered className="modal-dark">
         <Modal.Header closeButton closeVariant="white">
           <Modal.Title style={{ fontSize: '1.1rem', color: '#fff' }}>
-            🗑️ Réinitialiser les disponibilités (Étudiants)
+            Réinitialiser les disponibilités (Étudiants)
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -1994,7 +1994,7 @@ export default function DisponibilitesEtudiantPage() {
           </div>
 
           <p className="small text-muted mb-0">
-            ⚠️ Les créneaux réinitialisés seront remis à l'état "occupé" par défaut.
+            Les créneaux réinitialisés seront remis à l'état "occupé" par défaut.
           </p>
         </Modal.Body>
         <Modal.Footer>

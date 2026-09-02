@@ -9342,7 +9342,7 @@ export default function RendezVousPage() {
                 disabled={visibles.length === 0 || resetting}
                 title="Supprimer les rendez-vous générés"
               >
-                <span>🗑️</span>
+                <span></span>
                 <span>Vider planning ({visibles.length})</span>
               </Button>
             )}
@@ -9352,7 +9352,7 @@ export default function RendezVousPage() {
               onClick={handleExportExcel}
               disabled={filteredRdv.length === 0}
             >
-              <span>📊</span>
+              <span></span>
               <span>Exporter Excel ({filteredRdv.length})</span>
             </Button>
             <Button
@@ -9412,7 +9412,7 @@ export default function RendezVousPage() {
                     </>
                   ) : (
                     <>
-                      <span>✨</span>
+                      <span></span>
                       <span>Lancer la génération des rendez-vous</span>
                     </>
                   )}
@@ -9427,7 +9427,7 @@ export default function RendezVousPage() {
             )}
             {genResult && (
               <Alert variant="success" className="mt-3 py-2 small border-0" dismissible onClose={() => setGenResult(null)}>
-                🎉 <strong>{genResult.rdvProgrammes}</strong> créneaux programmés sur{' '}
+                 <strong>{genResult.rdvProgrammes}</strong> créneaux programmés sur{' '}
                 <strong>{genResult.totalSelections}</strong> vœux ({genResult.rdvNonProgrammes} non assignés).
               </Alert>
             )}
@@ -9489,7 +9489,7 @@ export default function RendezVousPage() {
                 value={selectedChef}
                 onChange={(e) => setSelectedChef(e.target.value)}
               >
-                <option value="all">👨‍🏫 Tous les chefs ({uniqueChefs.length})</option>
+                <option value="all"> Tous les chefs ({uniqueChefs.length})</option>
                 {uniqueChefs.map((chef) => (
                   <option key={chef} value={chef}>{chef}</option>
                 ))}

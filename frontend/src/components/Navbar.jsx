@@ -762,7 +762,7 @@ export default function Navbar() {
       <div className="app-navbar">
         <div className="app-navbar-brand">
           <span className="dot" />
-          ICAM
+          Icam
         </div>
 
         <div className="app-navbar-links">
@@ -829,10 +829,10 @@ export default function Navbar() {
           <div className="p-3 rounded mb-3" style={{ background: 'var(--panel-raised)', border: '1px solid var(--border-strong)' }}>
             <h6 className="text-danger fw-bold mb-2">Ce qui sera vidé et supprimé :</h6>
             <ul className="small text-light mb-0" style={{ lineHeight: '1.7' }}>
-              <li>🗄️ <strong>Base de données</strong> : Suppression des lignes dans toutes les tables (étudiants, chefs, rendez-vous, évaluations, affectations, disponibilités, vœux, questionnaires).</li>
-              <li>☁️ <strong>Cloud Storage</strong> : Suppression de tous les fichiers PDF (CVs et lettres de motivation).</li>
-              <li>🍪 <strong>Navigateur</strong> : Suppression des cookies, du <code>localStorage</code> et de la mémoire de session.</li>
-              <li>🛡️ <em>Votre compte administrateur principal reste préservé et la structure SQL reste intacte.</em></li>
+              <li> <strong>Base de données</strong> : Suppression des lignes dans toutes les tables (étudiants, chefs, rendez-vous, évaluations, affectations, disponibilités, vœux, questionnaires).</li>
+              <li> <strong>Cloud Storage</strong> : Suppression de tous les fichiers PDF (CVs et lettres de motivation).</li>
+              <li> <strong>Navigateur</strong> : Suppression des cookies, du <code>localStorage</code> et de la mémoire de session.</li>
+              <li> <em>Votre compte administrateur principal reste préservé et la structure SQL reste intacte.</em></li>
             </ul>
           </div>
 

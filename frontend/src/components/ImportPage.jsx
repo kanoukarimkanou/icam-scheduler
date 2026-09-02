@@ -3194,7 +3194,7 @@ export default function ImportPage() {
         let folderLabel = file.name;
         if (file.webkitRelativePath) {
           const parts = file.webkitRelativePath.split('/');
-          if (parts.length >= 2) folderLabel = `📁 ${parts[parts.length - 2]} / ${file.name}`;
+          if (parts.length >= 2) folderLabel = ` ${parts[parts.length - 2]} / ${file.name}`;
         }
 
         return {
@@ -3398,7 +3398,7 @@ export default function ImportPage() {
       if (rpcErr) throw rpcErr;
 
       messages.push('Données réinitialisées.');
-      setSuccessMsg(`🗑️ Purge réussie : ${messages.join(' ')}`);
+      setSuccessMsg(`Purge réussie : ${messages.join(' ')}`);
       setShowResetModal(false);
       setConfirmText('');
       setPurgeOptions({ documents: false, competences: false, etudiants: false, chefs: false, tout: false });
@@ -3602,7 +3602,7 @@ export default function ImportPage() {
       <div className="import-page-wrapper">
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <div>
-            <h2 className="fw-bold mb-0" style={{ fontSize: '1.5rem' }}>📥 Import &amp; Gestion des données</h2>
+            <h2 className="fw-bold mb-0" style={{ fontSize: '1.5rem' }}> Import &amp; Gestion des données</h2>
             <small className="text-muted">
               Alimentez la base avec vos fichiers CSV/Excel ou sélectionnez directement les dossiers <strong>Tout_CV</strong> et <strong>Tout_LM</strong>.
             </small>
@@ -3613,7 +3613,7 @@ export default function ImportPage() {
             size="sm"
             onClick={() => setShowResetModal(true)}
           >
-            <span>🗑️</span>
+            <span></span>
             <span>Zone Danger / Purge &amp; Reset</span>
           </Button>
         </div>
@@ -3815,7 +3815,7 @@ export default function ImportPage() {
       <Modal show={showResetModal} onHide={() => setShowResetModal(false)} size="lg" centered className="modal-dark">
         <Modal.Header closeButton closeVariant="white">
           <Modal.Title style={{ fontSize: '1.15rem', color: '#f87171' }}>
-            ⚠️ Zone Danger — Purge &amp; Remise à zéro
+            Zone Danger — Purge &amp; Remise à zéro
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -3827,7 +3827,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-docs"
-              label="📄 Supprimer TOUS les fichiers CV et Lettres de motivation du Cloud (Storage)"
+              label="Supprimer TOUS les fichiers CV et Lettres de motivation du Cloud (Storage)"
               checked={purgeOptions.documents}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, documents: e.target.checked }))}
               className="mb-2 text-white"
@@ -3835,7 +3835,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-comp"
-              label="📊 Vider les Aptitudes & Appétences des étudiants"
+              label=" Vider les Aptitudes & Appétences des étudiants"
               checked={purgeOptions.competences}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, competences: e.target.checked }))}
               className="mb-2 text-white"
@@ -3851,7 +3851,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-chefs"
-              label="👨‍🏫 Supprimer TOUS les Chefs de projet (efface aussi leurs disponibilités et rendez-vous)"
+              label=" Supprimer TOUS les Chefs de projet (efface aussi leurs disponibilités et rendez-vous)"
               checked={purgeOptions.chefs}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, chefs: e.target.checked }))}
               className="mb-2 text-warning"
@@ -3860,7 +3860,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-tout"
-              label="🔥 TOUT RÉINITIALISER : Vider absolument toutes les données de campagne pour une nouvelle rentrée"
+              label=" TOUT RÉINITIALISER : Vider absolument toutes les données de campagne pour une nouvelle rentrée"
               checked={purgeOptions.tout}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, tout: e.target.checked }))}
               className="text-danger fw-bold"
@@ -3883,7 +3883,7 @@ export default function ImportPage() {
           )}
 
           <p className="text-muted small mb-0">
-            ⚠️ Les données supprimées ne pourront pas être récupérées.
+             Les données supprimées ne pourront pas être récupérées.
           </p>
         </Modal.Body>
         <Modal.Footer>

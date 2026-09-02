@@ -1225,7 +1225,7 @@ export default function ParametresCompetencesPage() {
                                 onClick={() => setDeletingId(comp.id)}
                                 title="Supprimer"
                               >
-                                🗑️
+                                
                               </Button>
                             </div>
                           </td>

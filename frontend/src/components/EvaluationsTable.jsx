@@ -15023,7 +15023,7 @@ export default function EvaluationsTable() {
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
           <div>
             <div className="d-flex align-items-center gap-2">
-              <span style={{ fontSize: '1.6rem' }}>📝</span>
+              <span style={{ fontSize: '1.6rem' }}></span>
               <h2 className="fw-bold mb-0 text-white" style={{ letterSpacing: '-0.5px', fontSize: '1.5rem' }}>
                 {isChef ? `Mes Évaluations — ${chefInfo?.nom || 'Chef de projet'}` : 'Évaluations & Affectations Finales'}
               </h2>
@@ -15061,7 +15061,7 @@ export default function EvaluationsTable() {
                 onClick={() => setModalAffectationsOpen(true)}
                 className="px-3 py-2 fw-semibold"
               >
-                🎯 Résultats Affectations ({affectations.length} / {etudiants.length})
+                Résultats Affectations ({affectations.length} / {etudiants.length})
               </Button>
             )}
 
@@ -15073,7 +15073,7 @@ export default function EvaluationsTable() {
                 onClick={() => setShowResetModal(true)}
                 title="Supprimer les évaluations ou les affectations"
               >
-                <span>🗑️</span>
+                <span></span>
                 <span>Vider...</span>
               </Button>
             )}
@@ -15084,7 +15084,7 @@ export default function EvaluationsTable() {
               onClick={handleExportEvaluationsExcel}
               className="px-3 py-2 fw-semibold"
             >
-              📊 Exporter Notes
+               Exporter Notes
             </Button>
 
             {isAdmin && (
@@ -15094,7 +15094,7 @@ export default function EvaluationsTable() {
                 onClick={handleExportAffectationsExcel}
                 className="px-3 py-2 fw-semibold"
               >
-                📥 Exporter Affectations (.xlsx)
+                 Exporter Affectations (.xlsx)
               </Button>
             )}
 
@@ -15246,13 +15246,13 @@ export default function EvaluationsTable() {
                   >
                     ▤ Compact
                   </Button>
-                  <Button
+                  {/* <Button
                     variant={density === 'comfortable' ? 'secondary' : 'outline-secondary'}
                     onClick={() => setDensity('comfortable')}
                     title="Lignes aérées"
                   >
                     ☰ Confort
-                  </Button>
+                  </Button> */}
                 </ButtonGroup>
               )}
               <Badge bg="info" className="px-3 py-2">
@@ -15325,7 +15325,7 @@ export default function EvaluationsTable() {
 
                         <div className="chef-status-badges">
                           <Badge bg={rankBadgeVariant(rankNum)} text={rankBadgeText(rankNum)}>
-                            ⭐ {rankNum === 1 ? '1er choix' : `${rankNum}e choix`} ({rankInfo?.score ?? 0}/4)
+                             {rankNum === 1 ? '1er choix' : `${rankNum}e choix`} ({rankInfo?.score ?? 0}/4)
                           </Badge>
                           {aff && (
                             <Badge bg={isAssignedToMe ? 'success' : 'dark'} className="border border-secondary">
@@ -15571,7 +15571,7 @@ export default function EvaluationsTable() {
               value={selectedChefForQuota}
               onChange={(e) => setSelectedChefForQuota(e.target.value)}
             >
-              <option value="all">🌐 Tous les chefs de projet (Par défaut)</option>
+              <option value="all"> Tous les chefs de projet (Par défaut)</option>
               {chefs.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nom} {c.specialite ? `(${c.specialite})` : ''}
@@ -15642,7 +15642,7 @@ export default function EvaluationsTable() {
           </div>
 
           <p className="small text-muted mb-0">
-            💡 Les quotas en nombre d'étudiants sont calculés au plus haut pour A, B et D, et le reliquat est automatiquement équilibré sur la note C.
+             Les quotas en nombre d'étudiants sont calculés au plus haut pour A, B et D, et le reliquat est automatiquement équilibré sur la note C.
           </p>
         </Modal.Body>
         <Modal.Footer>
@@ -15698,7 +15698,7 @@ export default function EvaluationsTable() {
           </div>
 
           <p className="text-muted small mb-0">
-            ⚠️ Cette action est irréversible. Les profils des étudiants et des chefs de projet seront conservés.
+             Cette action est irréversible. Les profils des étudiants et des chefs de projet seront conservés.
           </p>
         </div>
         <div className="radar-modal-footer">
@@ -15714,7 +15714,7 @@ export default function EvaluationsTable() {
       {/* Modal Résultats d'affectations avec rang d'appétence */}
       <Modal show={modalAffectationsOpen} onHide={() => setModalAffectationsOpen(false)} size="xl" centered className="modal-dark">
         <Modal.Header closeButton closeVariant="white">
-          <Modal.Title className="text-white">🎯 Synthèse Officielle des Affectations ({affectations.length} / {etudiants.length})</Modal.Title>
+          <Modal.Title className="text-white"> Synthèse Officielle des Affectations ({affectations.length} / {etudiants.length})</Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4" style={{ maxHeight: '75vh', overflowY: 'auto' }}>
           <Row className="g-3 mb-4">
@@ -15785,7 +15785,7 @@ export default function EvaluationsTable() {
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-between">
           <Button variant="success" onClick={handleExportAffectationsExcel}>
-            📥 Télécharger le fichier Excel (.xlsx)
+             Télécharger le fichier Excel (.xlsx)
           </Button>
           <Button variant="secondary" onClick={() => setModalAffectationsOpen(false)}>
             Fermer

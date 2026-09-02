@@ -1882,7 +1882,7 @@ export default function DisponibilitesPage() {
                 onClick={() => setShowResetModal(true)}
                 disabled={resetting}
               >
-                <span>🗑️</span>
+                <span></span>
                 <span>Réinitialiser...</span>
               </Button>
 
@@ -1999,7 +1999,7 @@ export default function DisponibilitesPage() {
       <Modal show={showResetModal} onHide={() => setShowResetModal(false)} centered className="modal-dark">
         <Modal.Header closeButton closeVariant="white">
           <Modal.Title style={{ fontSize: '1.1rem', color: '#fff' }}>
-            🗑️ Réinitialiser les disponibilités (Chefs)
+            Réinitialiser les disponibilités (Chefs)
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -2028,7 +2028,7 @@ export default function DisponibilitesPage() {
           </div>
 
           <p className="small text-muted mb-0">
-            ⚠️ Les créneaux réinitialisés seront remis à l'état "occupé" par défaut.
+            Les créneaux réinitialisés seront remis à l'état "occupé" par défaut.
           </p>
         </Modal.Body>
         <Modal.Footer>
