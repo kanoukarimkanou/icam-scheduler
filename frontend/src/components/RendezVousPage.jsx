@@ -9289,6 +9289,23 @@ export default function RendezVousPage() {
   background: #111729 !important;
   box-shadow: inset 3px 0 0 #2563eb !important;
 }
+  .chef-view .matrix-cell-filled {
+  background: #111729 !important;
+  box-shadow: none !important;
+}
+
+.chef-view .matrix-slot-date,
+.chef-view .matrix-slot-time {
+  color: #22c55e !important;
+}
+
+.chef-view .matrix-cell {
+  border-left: 1px solid #2563eb !important;
+}
+
+.chef-view tbody tr {
+  border-bottom: 1px solid #2563eb !important;
+}
       `}</style>
 
       <Navbar />
@@ -9522,7 +9539,14 @@ export default function RendezVousPage() {
         ) : (
           <div className="glass-card overflow-hidden">
             <div className="matrix-scroll-wrapper">
-              <Table hover size="sm" className="wow-table matrix-table mb-0 align-middle">
+              {/* <Table hover size="sm" className="wow-table matrix-table mb-0 align-middle"> */}
+              <Table
+                  hover
+                  size="sm"
+                  className={`wow-table matrix-table mb-0 align-middle ${
+                    isChef || (isAdmin && selectedChef !== 'all') ? 'chef-view' : ''
+                  }`}
+                >
                 <thead>
                   <tr>
                     <th className="matrix-corner">Étudiant</th>
