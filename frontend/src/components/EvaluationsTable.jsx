@@ -14831,6 +14831,22 @@ export default function EvaluationsTable() {
           border-style: solid;
         }
 
+        .note-rank-square {
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+}
+.note-rank-square.is-assigned {
+  box-shadow: 0 0 0 2px #10b981, 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+.note-rank-square.is-assigned:hover {
+  transform: translateY(-1px) scale(1.05);
+}
+.note-rank-square.is-pending:hover {
+  opacity: 1;
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
         .chef-eval-row {
           padding: 0.6rem 0.9rem;
         }
@@ -15484,7 +15500,7 @@ export default function EvaluationsTable() {
                           </div>
                         </td>
 
-                        {chefs.map((c) => {
+                        {/* {chefs.map((c) => {
                           const ev = getEval(etud.id, c.id);
                           const rankInfo = studentRanks?.get(c.id);
                           const hasComment = Boolean(ev?.commentaire?.trim());
@@ -15559,7 +15575,69 @@ export default function EvaluationsTable() {
                               </div>
                             </td>
                           );
-                        })}
+                        })} */}
+                        {chefs.map((c) => {
+  const ev = getEval(etud.id, c.id);
+  const rankInfo = studentRanks?.get(c.id);
+  const hasComment = Boolean(ev?.commentaire?.trim());
+  const isAssignedToThisChef = aff?.chef_id === c.id;
+  const hasNote = Boolean(ev?.note);
+  const squareStyle = hasNote ? getNoteSquareStyle(ev.note) : undefined;
+  const rankText = rankInfo ? rankLabel(rankInfo.rank) : '—';
+  const isTogglingThisCell = savingAffectationId === etud.id && savingAffectationChefId === c.id;
+
+  return (
+    <td
+      key={c.id}
+      className="col-chef"
+      style={{ backgroundColor: isAssignedToThisChef ? 'rgba(16, 185, 129, 0.15)' : 'inherit' }}
+    >
+      <div className="d-flex align-items-center justify-content-center gap-1">
+        {isTogglingThisCell ? (
+          <Spinner
+            size="sm"
+            animation="border"
+            variant="info"
+            style={{ width: '0.7rem', height: '0.7rem', borderWidth: '1.5px' }}
+          />
+        ) : (
+          <span
+            className={`note-rank-square ${hasNote ? 'is-evaluated' : 'is-pending'} ${isAssignedToThisChef ? 'is-assigned' : ''}`}
+            style={squareStyle}
+            role="button"
+            tabIndex={0}
+            onClick={() =>
+              handleAssign(etud.id, isAssignedToThisChef ? '' : String(c.id), c.id)
+            }
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleAssign(etud.id, isAssignedToThisChef ? '' : String(c.id), c.id);
+              }
+            }}
+            title={
+              isAssignedToThisChef
+                ? `Affecté à ${c.nom} — ${rankText} choix${hasNote ? ` (Note ${ev.note})` : ''} — cliquer pour retirer`
+                : `${rankText} choix${hasNote ? ` (Note ${ev.note})` : ''} — cliquer pour affecter à ${c.nom}`
+            }
+            aria-label={`Affecter ${fullName} à ${c.nom}`}
+          >
+            {rankText}
+          </span>
+        )}
+
+        {hasComment && (
+          <button
+            className="btn-comment-popup"
+            onClick={() => handleOpenCommentPopup(etud, c, ev)}
+            aria-label={`Voir le commentaire de ${c.nom} pour ${fullName}`}
+          >
+            💬
+          </button>
+        )}
+      </div>
+    </td>
+  );
+})}
                       </tr>
                     );
                   })}
