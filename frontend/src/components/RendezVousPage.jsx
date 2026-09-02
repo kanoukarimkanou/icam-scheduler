@@ -9316,10 +9316,10 @@ export default function RendezVousPage() {
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
             <div className="d-flex align-items-center gap-2">
-              <span style={{ fontSize: '1.6rem' }}>📅</span>
+              <span style={{ fontSize: '1.6rem' }}></span>
               <h2 className="fw-bold mb-0" style={{ fontSize: '1.5rem', letterSpacing: '-0.4px', color: 'var(--text-primary)' }}>
                 {isAdmin
-                  ? 'Planning des Rendez-vous (Admin)'
+                  ? 'Planning des Rendez-vous '
                   : isChef
                   ? `Mes Rendez-vous (${chefInfo?.nom || 'Chef de projet'})`
                   : 'Mes Rendez-vous'}
@@ -9327,7 +9327,7 @@ export default function RendezVousPage() {
             </div>
             <p className="text-muted small mt-1 mb-0">
               {(isAdmin || isChef) ? (
-                <>💡 <em>Astuce : Cliquez sur le nom d'un étudiant pour voir son Radar de compétences, ou sur 📄 CV / ✉️ LM pour ouvrir ses documents.</em></>
+                <> <em> </em></>
               ) : (
                 <>Consultez vos horaires d'entretiens et les chefs de projet associés.</>
               )}
@@ -9700,7 +9700,7 @@ export default function RendezVousPage() {
           </div>
 
           <p className="text-muted small mb-0">
-            ⚠️ Cette action est irréversible. Les disponibilités et sélections resteront intactes.
+            Cette action est irréversible. Les disponibilités et sélections resteront intactes.
           </p>
         </div>
         <div className="radar-modal-footer">
