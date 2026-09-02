@@ -15014,6 +15014,17 @@ export default function EvaluationsTable() {
           .chef-card-header-row { padding: 0.85rem 0.9rem; }
           .chef-card-body-row { padding: 0.85rem 0.9rem; }
         }
+          .chef-view .matrix-student-cell {
+  background: #111729 !important;
+}
+
+.chef-view tbody tr:hover .matrix-student-cell {
+  background: #111729 !important;
+}
+
+.chef-view .student-name-link {
+  color: #22c55e !important;
+}
       `}</style>
 
       <Navbar />
