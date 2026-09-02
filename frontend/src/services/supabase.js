@@ -4683,10 +4683,54 @@ export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
 };
 
 // Extraire le chef de projet depuis un texte de vœu Moodle (ex: "Conception... [M. BONNAL]")
+// export const findChefFromWishText = (wishText, chefsList) => {
+//   if (!wishText || !chefsList || chefsList.length === 0) return null;
+
+//   const raw = String(wishText).trim();
+
+//   // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
+//   const bracketMatch = raw.match(/\[([^\]]+)\]/);
+//   const target = bracketMatch ? bracketMatch[1] : raw;
+
+//   const cleanedTarget = cleanTextForMatching(target);
+//   if (!cleanedTarget) return null;
+
+//   // 2. Correspondance par nom de famille du chef
+//   const found = chefsList.find((c) => {
+//     const nomComplet = cleanTextForMatching(c.nom);
+//     const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
+//     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || ''); // ex: "bonnal", "guettari"
+
+//     return (
+//       (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
+//       (nomDeFamille && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget)))
+//     );
+//   });
+
+//   if (found) return found;
+
+//   // 3. Fallback : correspondance par spécialité du projet
+//   return chefsList.find((c) => {
+//     const spec = cleanTextForMatching(c.specialite);
+//     return spec && cleanTextForMatching(raw).includes(spec);
+//   }) || null;
+// };
+
+
+// Décodage HTML et nettoyage robuste pour Moodle
+export const decodeHtmlEntities = (str) => {
+  return (str || '')
+    .replace(/&#039;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+};
+
 export const findChefFromWishText = (wishText, chefsList) => {
   if (!wishText || !chefsList || chefsList.length === 0) return null;
 
-  const raw = String(wishText).trim();
+  const raw = decodeHtmlEntities(String(wishText)).trim();
 
   // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
   const bracketMatch = raw.match(/\[([^\]]+)\]/);
@@ -4699,7 +4743,7 @@ export const findChefFromWishText = (wishText, chefsList) => {
   const found = chefsList.find((c) => {
     const nomComplet = cleanTextForMatching(c.nom);
     const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
-    const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || ''); // ex: "bonnal", "guettari"
+    const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || '');
 
     return (
       (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
@@ -4709,7 +4753,7 @@ export const findChefFromWishText = (wishText, chefsList) => {
 
   if (found) return found;
 
-  // 3. Fallback : correspondance par spécialité du projet
+  // 3. Fallback : correspondance par spécialité
   return chefsList.find((c) => {
     const spec = cleanTextForMatching(c.specialite);
     return spec && cleanTextForMatching(raw).includes(spec);
