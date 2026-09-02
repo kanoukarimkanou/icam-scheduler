@@ -3133,12 +3133,12 @@ export default function ImportPage() {
   }, []);
 
   const importTypesList = [
-    { value: 'chefs', label: 'Chefs de projet', hint: 'Fichier CSV / Excel (nom, spécialité, email)', icon: '👨‍🏫', isDoc: false },
-    { value: 'etudiants', label: 'Étudiants', hint: 'Fichier CSV / Excel (nom, prénom, email, parcours)', icon: '🎓', isDoc: false },
-    { value: 'aptitudes', label: `Aptitudes techniques (${referentielCompetences.length} compétences actives)`, hint: 'Questionnaire Moodle ou CSV de compétences', icon: '📊', isDoc: false },
-    { value: 'apetences', label: `Appétences / Intérêts (${referentielCompetences.length} compétences actives)`, hint: 'Questionnaire Moodle ou CSV d’appétences', icon: '🎯', isDoc: false },
-    { value: 'cv', label: 'CV des étudiants (Dossier Tout_CV)', hint: 'Sélectionnez le dossier Tout_CV ou plusieurs fichiers PDF', icon: '📄', isDoc: true },
-    { value: 'lm', label: 'Lettres de motivation (Dossier Tout_LM)', hint: 'Sélectionnez le dossier Tout_LM ou plusieurs fichiers PDF', icon: '✉️', isDoc: true },
+    { value: 'chefs', label: 'Chefs de projet', hint: 'Fichier CSV / Excel (nom, spécialité, email)', icon: ' ', isDoc: false },
+    { value: 'etudiants', label: 'Étudiants', hint: 'Fichier CSV / Excel (nom, prénom, email, parcours)', icon: ' ', isDoc: false },
+    { value: 'aptitudes', label: `Aptitudes techniques (${referentielCompetences.length} compétences actives)`, hint: 'Questionnaire Moodle ou CSV de compétences', icon: ' ', isDoc: false },
+    { value: 'apetences', label: `Appétences / Intérêts (${referentielCompetences.length} compétences actives)`, hint: 'Questionnaire Moodle ou CSV d’appétences', icon: ' ', isDoc: false },
+    { value: 'cv', label: 'CV des étudiants (Dossier Tout_CV)', hint: 'Sélectionnez le dossier Tout_CV ou plusieurs fichiers PDF', icon: ' ', isDoc: true },
+    { value: 'lm', label: 'Lettres de motivation (Dossier Tout_LM)', hint: 'Sélectionnez le dossier Tout_LM ou plusieurs fichiers PDF', icon: ' ', isDoc: true },
   ];
 
   const activeType = importTypesList.find((t) => t.value === importType);
@@ -3340,7 +3340,7 @@ export default function ImportPage() {
         });
 
         setSuccessMsg(
-          `🎉 ${res.success} fichier(s) (${importType.toUpperCase()}) associés et stockés avec succès dans Supabase Storage !`
+          ` ${res.success} fichier(s) (${importType.toUpperCase()}) associés et stockés avec succès dans Supabase Storage !`
         );
         setPdfItems([]);
         setFileName('');
@@ -3843,7 +3843,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-etud"
-              label="🎓 Supprimer TOUS les Étudiants (efface aussi leurs vœux, rendez-vous et évaluations)"
+              label="Supprimer TOUS les Étudiants (efface aussi leurs vœux, rendez-vous et évaluations)"
               checked={purgeOptions.etudiants}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, etudiants: e.target.checked }))}
               className="mb-2 text-warning"

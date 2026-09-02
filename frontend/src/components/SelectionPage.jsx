@@ -7708,7 +7708,7 @@ export default function SelectionPage() {
       setSelections((prev) => new Set([...prev, ...nouvellesCles]));
       setInitialSelections((prev) => new Set([...prev, ...nouvellesCles]));
       setSuccessMsg(
-        `🎯 Sélection automatique effectuée pour ${etudiantsASelectionner.length} étudiant(s) (${nouvellesCles.length} vœu(x)).`
+        ` Sélection automatique effectuée pour ${etudiantsASelectionner.length} étudiant(s) (${nouvellesCles.length} vœu(x)).`
       );
     } catch (err) {
       setError(err.message || 'Erreur sélection automatique.');
@@ -7825,7 +7825,7 @@ export default function SelectionPage() {
 
       setInitialSelections(new Set(selections));
       setSuccessMsg(
-        `✨ Sélections enregistrées (${toAdd.length} ajout(s), ${toDelete.length} suppression(s)).`
+        ` Sélections enregistrées (${toAdd.length} ajout(s), ${toDelete.length} suppression(s)).`
       );
     } catch (err) {
       setError(err.message || "Erreur lors de l'enregistrement.");
@@ -7841,7 +7841,7 @@ export default function SelectionPage() {
       await resetAllSelections();
       setSelections(new Set());
       setInitialSelections(new Set());
-      setSuccessMsg('🗑️ Toutes les sélections ont été réinitialisées avec succès.');
+      setSuccessMsg('Toutes les sélections ont été réinitialisées avec succès.');
       setShowResetModal(false);
     } catch (err) {
       setError(err.message || 'Erreur lors de la réinitialisation des sélections.');
@@ -8023,12 +8023,12 @@ export default function SelectionPage() {
           {/* Header */}
           <div className="matrix-header">
             <div>
-              <h2 className="matrix-title display">🎯 Sélections &amp; Classement par Appétences</h2>
+              <h2 className="matrix-title display">Sélections &amp; Classement par Appétences</h2>
               <p className="matrix-subtitle">
                 Le rang de chaque chef (1er, 2e, 3e…) est calculé dynamiquement d'après les appétences actives ({referentielCompetences.length} compétences).
               </p>
               <p className="matrix-subtitle auto-legend mono">
-                🎯 Sélection manuelle ou assistée par appétences
+                 Sélection manuelle ou assistée par appétences
               </p>
             </div>
 
@@ -8055,7 +8055,7 @@ export default function SelectionPage() {
                 disabled={selections.size === 0 || resetting}
                 title="Supprimer toutes les sélections pour repartir de zéro"
               >
-                🗑️ Vider tout ({selections.size})
+                 Vider tout ({selections.size})
               </Button>
 
               <Button className="btn-pill btn-export-pill" onClick={handleDownloadSelectionXLSX}>
