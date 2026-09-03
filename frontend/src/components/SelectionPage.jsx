@@ -17576,7 +17576,9 @@ const STYLE_SHEET = `
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.stats-kpi-sub { font-size: 0.74rem; color: var(--text-muted); }
+// .stats-kpi-sub { font-size: 0.74rem; color: var(--text-muted); }
+.stats-kpi-sub { font-size: 0.74rem; color: #6ee7b7; }
+
 .stats-kpi-sub strong { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
 
 .stats-insight-bar {
@@ -17588,7 +17590,8 @@ const STYLE_SHEET = `
   border-radius: 10px;
   padding: 0.6rem 0.85rem;
   margin-bottom: 1.1rem;
-  color: var(--text-muted);
+  // color: var(--text-muted);
+  color: #6ee7b7;
   font-size: 0.78rem;
   line-height: 1.5;
 }
@@ -17723,10 +17726,13 @@ const STYLE_SHEET = `
   border-radius: 999px;
   padding: 0.22rem 0.6rem;
   font-size: 0.74rem;
-  color: var(--text);
+  // color: var(--text);
+  color: #2dd4bf;
   white-space: nowrap;
 }
-.stats-detail-empty { font-size: 0.76rem; color: var(--text-faint); font-style: italic; }
+// .stats-detail-empty { font-size: 0.76rem; color: var(--text-faint); font-style: italic; }
+.stats-detail-empty { font-size: 0.76rem; color: #6ee7b7; font-style: italic; }
+
 
 .stats-modal-table tfoot th {
   position: sticky;
