@@ -3972,11 +3972,11 @@ export default function ImportPage() {
   }, []);
 
   const importTypesList = [
-    { value: 'chefs', label: 'Chefs de projet', hint: 'Fichier CSV / Excel (nom, spécialité, email)', icon: '👨‍🏫', isDoc: false },
-    { value: 'etudiants', label: 'Étudiants', hint: 'Fichier CSV / Excel (nom, prénom, email, parcours)', icon: '🎓', isDoc: false },
-    { value: 'voeux', label: 'Vœux réels des étudiants (1er, 2e, 3e choix Moodle)', hint: 'Fichier Moodle avec colonnes 1er, 2nd et 3eme Choix', icon: '🎯', isDoc: false },
-    { value: 'aptitudes', label: `Aptitudes techniques (${referentielCompetences.length} compétences)`, hint: 'Questionnaire Moodle ou CSV de compétences', icon: '📊', isDoc: false },
-    { value: 'apetences', label: `Appétences / Intérêts (${referentielCompetences.length} compétences)`, hint: 'Questionnaire Moodle ou CSV d’appétences', icon: '⭐', isDoc: false },
+    { value: 'chefs', label: 'Chefs de projet', hint: 'Fichier CSV / Excel (nom, spécialité, email)', icon: '', isDoc: false },
+    { value: 'etudiants', label: 'Étudiants', hint: 'Fichier CSV / Excel (nom, prénom, email, parcours)', icon: '', isDoc: false },
+    { value: 'voeux', label: 'Vœux réels des étudiants (1er, 2e, 3e choix Moodle)', hint: 'Fichier Moodle avec colonnes 1er, 2nd et 3eme Choix', icon: '', isDoc: false },
+    { value: 'aptitudes', label: `Aptitudes techniques (${referentielCompetences.length} compétences)`, hint: 'Questionnaire Moodle ou CSV de compétences', icon: '', isDoc: false },
+    { value: 'apetences', label: `Appétences / Intérêts (${referentielCompetences.length} compétences)`, hint: 'Questionnaire Moodle ou CSV d’appétences', icon: '', isDoc: false },
     { value: 'cv', label: 'CV des étudiants (Dossier Tout_CV)', hint: 'Sélectionnez le dossier Tout_CV ou plusieurs fichiers PDF', icon: '📄', isDoc: true },
     { value: 'lm', label: 'Lettres de motivation (Dossier Tout_LM)', hint: 'Sélectionnez le dossier Tout_LM ou plusieurs fichiers PDF', icon: '✉️', isDoc: true },
   ];
@@ -4236,7 +4236,7 @@ export default function ImportPage() {
         });
 
         setSuccessMsg(
-          `🎉 ${res.success} fichier(s) (${importType.toUpperCase()}) associés et stockés avec succès dans Supabase Storage !`
+          `${res.success} fichier(s) (${importType.toUpperCase()}) associés et stockés avec succès dans Supabase Storage !`
         );
         setPdfItems([]);
         setFileName('');
@@ -4266,7 +4266,7 @@ export default function ImportPage() {
         await Promise.all(savePromises);
 
         setSuccessMsg(
-          `🎯 Vœux importés avec succès pour ${wishesData.length} étudiants (${totalSelectionsCreated} sélections créées avec les priorités 1, 2 et 3).`
+          `Vœux importés avec succès pour ${wishesData.length} étudiants (${totalSelectionsCreated} sélections créées avec les priorités 1, 2 et 3).`
         );
         setWishesData([]);
         setFileName('');
@@ -4325,7 +4325,7 @@ export default function ImportPage() {
       if (rpcErr) throw rpcErr;
 
       messages.push('Données réinitialisées.');
-      setSuccessMsg(`🗑️ Purge réussie : ${messages.join(' ')}`);
+      setSuccessMsg(`Purge réussie : ${messages.join(' ')}`);
       setShowResetModal(false);
       setConfirmText('');
       setPurgeOptions({ documents: false, competences: false, etudiants: false, chefs: false, tout: false });
@@ -4543,7 +4543,7 @@ export default function ImportPage() {
             size="sm"
             onClick={() => setShowResetModal(true)}
           >
-            <span>🗑️</span>
+            <span></span>
             <span>Zone Danger / Purge &amp; Reset</span>
           </Button>
         </div>
@@ -4834,7 +4834,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-comp"
-              label="📊 Vider les Aptitudes & Appétences des étudiants"
+              label="Vider les Aptitudes & Appétences des étudiants"
               checked={purgeOptions.competences}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, competences: e.target.checked }))}
               className="mb-2 text-white"
@@ -4850,7 +4850,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-chefs"
-              label="👨‍🏫 Supprimer TOUS les Chefs de projet (efface aussi leurs disponibilités et rendez-vous)"
+              label="Supprimer TOUS les Chefs de projet (efface aussi leurs disponibilités et rendez-vous)"
               checked={purgeOptions.chefs}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, chefs: e.target.checked }))}
               className="mb-2 text-warning"
@@ -4859,7 +4859,7 @@ export default function ImportPage() {
             <Form.Check
               type="checkbox"
               id="purge-tout"
-              label="🔥 TOUT RÉINITIALISER : Vider absolument toutes les données de campagne pour une nouvelle rentrée"
+              label="TOUT RÉINITIALISER : Vider absolument toutes les données de campagne pour une nouvelle rentrée"
               checked={purgeOptions.tout}
               onChange={(e) => setPurgeOptions((p) => ({ ...p, tout: e.target.checked }))}
               className="text-danger fw-bold"

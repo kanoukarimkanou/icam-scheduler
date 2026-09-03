@@ -18386,7 +18386,7 @@ export default function SelectionPage() {
           {/* Header */}
           <div className="matrix-header">
             <div>
-              <h2 className="matrix-title display">🎯 Sélections &amp; Vœux Réels des Étudiants</h2>
+              <h2 className="matrix-title display"> Sélections &amp; Vœux Réels des Étudiants</h2>
               <p className="matrix-subtitle">
                 Les vœux réels (1er, 2e, 3e choix) sont importés directement depuis le questionnaire Moodle et modifiables par l'administrateur.
               </p>
