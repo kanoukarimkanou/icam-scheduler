@@ -18401,7 +18401,7 @@ export default function SelectionPage() {
                 onClick={() => setShowStatsModal(true)}
                 title="Afficher le tableau récapitulatif des choix par thématique"
               >
-                📊 Stats par thématique
+                Stats par thématique
               </Button>
 
               <Button
@@ -18410,11 +18410,11 @@ export default function SelectionPage() {
                 disabled={selectionsMap.size === 0 || resetting}
                 title="Supprimer toutes les sélections pour repartir de zéro"
               >
-                🗑️ Vider tout ({selectionsMap.size})
+                Vider tout ({selectionsMap.size})
               </Button>
 
               <Button className="btn-pill btn-export-pill" onClick={handleDownloadSelectionXLSX}>
-                📊 Exporter (.xlsx)
+                Exporter (.xlsx)
               </Button>
 
               <Button
