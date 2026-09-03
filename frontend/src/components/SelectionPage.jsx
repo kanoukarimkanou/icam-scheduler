@@ -17612,19 +17612,22 @@ const STYLE_SHEET = `
   top: 0;
   z-index: 5;
   background: #0f1524;
-  color: var(--text-faint);
+  // color: var(--text-faint);
+  color: #2dd4bf;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
+  // border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(45, 212, 191, 0.35);
   padding: 0.6rem 0.7rem;
   white-space: nowrap;
 }
 .stats-modal-table tbody td {
   padding: 0.55rem 0.7rem;
   font-size: 0.83rem;
-  border-bottom: 1px solid var(--border);
+  // border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(45, 212, 191, 0.35);
   vertical-align: middle;
 }
 .stats-modal-table tbody tr:last-child td { border-bottom: none; }
