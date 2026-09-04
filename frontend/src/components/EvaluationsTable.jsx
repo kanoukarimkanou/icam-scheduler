@@ -21197,9 +21197,9 @@ export default function EvaluationsTable() {
     );
   }
 
-  // const rowMinHeight = density === 'compact' ? '38px' : '52px';
-  // const firstColWidth = density === 'compact' ? 168 : 200;
-  // const chefColWidth = density === 'compact' ? 76 : 96;
+  const rowMinHeight = density === 'compact' ? '38px' : '52px';
+  const firstColWidth = density === 'compact' ? 168 : 200;
+  const chefColWidth = density === 'compact' ? 76 : 96;
 
   return (
     <>
