@@ -13066,10 +13066,15 @@ export default function RendezVousPage() {
           gap: 3px;
         }
         .matrix-slot-date {
-          font-size: 0.78rem;
-          color: #c3ccdf;
+          font-size: 0.72rem;
           font-weight: 700;
-          letter-spacing: 0.03em;
+          color: #dee5f2;
+          background: #2a3346;
+          border: 1px solid #3d4760;
+          border-radius: 5px;
+          padding: 1px 7px;
+          line-height: 1.3;
+          letter-spacing: 0.02em;
         }
         .matrix-slot-time {
           font-size: 0.95rem;
@@ -13320,9 +13325,6 @@ export default function RendezVousPage() {
         }
         .chef-view .matrix-cell-filled:hover {
           background-color: rgba(22, 163, 74, 0.16) !important;
-        }
-        .chef-view .matrix-slot-date {
-          color: #aab6cc;
         }
         .chef-view .matrix-slot-time {
           color: #ffffff;
