@@ -23332,12 +23332,12 @@ function SelectionCell({ selected, rankNum, onClick }) {
         <span
           className="badge-rank-selection is-selected"
           style={getRankBadgeStyle(rankNum)}
-          title={`Voeu ${rankLabel(rankNum)} - cliquer pour retirer`}
+          title={`Voeu ${rankLabel(rankNum)} - cliquer pour decocher`}
         >
           {rankLabel(rankNum)}
         </span>
       ) : (
-        <span className="badge-rank-selection is-pending" title="Cliquer pour selectionner">
+        <span className="badge-rank-selection is-pending" title="Cliquer pour cocher">
           +
         </span>
       )}
@@ -23395,7 +23395,7 @@ export default function SelectionPage() {
   const [referentielCompetences, setReferentielCompetences] = useState([]);
   const [allVoeux, setAllVoeux] = useState([]);
 
-  // Map "etudiantId-chefId" => priorite (librement ajustable par l'administrateur)
+  // Map "etudiantId-chefId" => priorite (seules les cases cochees sont presentes dans cette Map)
   const [selectionsMap, setSelectionsMap] = useState(new Map());
   const [initialSelectionsMap, setInitialSelectionsMap] = useState(new Map());
 
@@ -23445,11 +23445,15 @@ export default function SelectionPage() {
       setReferentielCompetences(refCompsData || []);
       setAllVoeux(voeuxData || []);
 
-      // Chargement de l'ensemble des selections en base (pre-remplies au Top 3 lors de l'import)
+      // ✅ SEULS LES 3 PREMIERS CHOIX SONT COCHÉS PAR DÉFAUT
+      // Tout choix au-dela (priorite > 3) apparait comme un simple '+' non coche
       const activeMap = new Map();
       (selectionsData || []).forEach((s) => {
         if (s.etudiant_id && s.chef_de_projet_id) {
-          activeMap.set(`${s.etudiant_id}-${s.chef_de_projet_id}`, s.priorite || 1);
+          const p = Number(s.priorite) || 1;
+          if (p <= 3) {
+            activeMap.set(`${s.etudiant_id}-${s.chef_de_projet_id}`, p);
+          }
         }
       });
 
@@ -23465,6 +23469,17 @@ export default function SelectionPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Map d'acces rapide aux 10 voeux reels Moodle
+  const moodleVoeuxMap = useMemo(() => {
+    const map = new Map();
+    (allVoeux || []).forEach((v) => {
+      if (v.etudiant_id && v.chef_de_projet_id) {
+        map.set(`${v.etudiant_id}-${v.chef_de_projet_id}`, Number(v.rang));
+      }
+    });
+    return map;
+  }, [allVoeux]);
 
   const hasChanges = useMemo(() => {
     if (selectionsMap.size !== initialSelectionsMap.size) return true;
@@ -23510,7 +23525,7 @@ export default function SelectionPage() {
     return map;
   }, [selectionsMap]);
 
-  // Modale statistique : lit les 10 voeux reels complets
+  // Modale statistique : analyse la totalite des 10 voeux reels
   const statsByThematique = useMemo(() => {
     let maxP = 10;
     const sourceData = allVoeux.length > 0 ? allVoeux : [];
@@ -23627,27 +23642,33 @@ export default function SelectionPage() {
     );
   };
 
-  // Bascule manuelle libre : l'administrateur peut ajuster sans blocage
+  // ✅ COCHER / DÉCOCHER LIBREMENT SANS AUCUN BLOCAGE
   const toggleSelection = useCallback((etudiantId, chefId) => {
     const key = `${etudiantId}-${chefId}`;
     setSelectionsMap((prev) => {
       const next = new Map(prev);
       if (next.has(key)) {
+        // Décocher
         next.delete(key);
       } else {
-        // Trouve le prochain rang disponible pour cet etudiant sans bloquer
-        let maxPrio = 0;
-        for (const [k, p] of next.entries()) {
-          if (k.startsWith(`${etudiantId}-`)) {
-            if (p > maxPrio) maxPrio = p;
+        // Cocher : reprend le vrai rang de Moodle si existant, sinon le rang suivant
+        const realMoodleRank = moodleVoeuxMap.get(key);
+        if (realMoodleRank) {
+          next.set(key, realMoodleRank);
+        } else {
+          let maxPrio = 0;
+          for (const [k, p] of next.entries()) {
+            if (k.startsWith(`${etudiantId}-`)) {
+              if (p > maxPrio) maxPrio = p;
+            }
           }
+          next.set(key, maxPrio + 1);
         }
-        next.set(key, maxPrio + 1);
       }
       return next;
     });
     setSuccessMsg(null);
-  }, []);
+  }, [moodleVoeuxMap]);
 
   const handleSelectAllVisible = () => {
     setSelectionsMap((prev) => {
