@@ -30455,11 +30455,15 @@ const STYLE_SHEET = `
    un fond sombre uniforme sur toutes les cellules du corps du tableau pour
    que les pastilles non cochees restent visibles, aligne avec la colonne
    etudiant (meme teinte #131c2e). */
-.matrix-table > :not(caption) > tbody > tr > * {
+.matrix-table tbody tr > td,
+.matrix-table tbody tr > th {
   background-color: #131c2e !important;
   color: var(--text) !important;
 }
-.matrix-table tbody tr:hover td { background-color: var(--surface-hover) !important; }
+.matrix-table tbody tr:hover > td,
+.matrix-table tbody tr:hover > th {
+  background-color: var(--surface-hover) !important;
+}
 
 .student-cell { white-space: normal; }
 .student-cell-inner { max-width: 100%; }
