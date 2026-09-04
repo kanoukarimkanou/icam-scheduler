@@ -20579,16 +20579,52 @@ const rankLabel = (rank) => (rank === 1 ? '1er' : `${rank}e`);
 
 const NOTE_ACCENT_COLORS = { A: '#10b981', B: '#06b6d4', C: '#f59e0b', D: '#f87171' };
 
+// const getNoteSquareStyle = (note) => {
+//   switch (note) {
+//     case 'A':
+//       return { background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: '1px solid #34d399' };
+//     case 'B':
+//       return { background: 'linear-gradient(135deg, #06b6d4, #0284c7)', color: '#fff', border: '1px solid #38bdf8' };
+//     case 'C':
+//       return { background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: '1px solid #fbbf24' };
+//     case 'D':
+//       return { background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: '#fff', border: '1px solid #f87171' };
+//     default:
+//       return undefined;
+//   }
+// };
+
+
 const getNoteSquareStyle = (note) => {
   switch (note) {
     case 'A':
-      return { background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: '1px solid #34d399' };
+      return {
+        background: 'linear-gradient(135deg, #10b981, #059669)',
+        color: '#39ff14',
+        border: '1px solid #34d399',
+      };
+
     case 'B':
-      return { background: 'linear-gradient(135deg, #06b6d4, #0284c7)', color: '#fff', border: '1px solid #38bdf8' };
+      return {
+        background: 'linear-gradient(135deg, #06b6d4, #0284c7)',
+        color: '#39ff14',
+        border: '1px solid #38bdf8',
+      };
+
     case 'C':
-      return { background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: '1px solid #fbbf24' };
+      return {
+        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        color: '#39ff14',
+        border: '1px solid #fbbf24',
+      };
+
     case 'D':
-      return { background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: '#fff', border: '1px solid #f87171' };
+      return {
+        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        color: '#39ff14',
+        border: '1px solid #f87171',
+      };
+
     default:
       return undefined;
   }
@@ -21404,6 +21440,34 @@ export default function EvaluationsTable() {
         //   cursor: pointer;
         //   transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
         // }
+        // .note-rank-square {
+        //     display: inline-flex;
+        //     align-items: center;
+        //     justify-content: center;
+
+        //     min-width: 26px;
+        //     height: 22px;
+        //     padding: 0 5px;
+
+        //     border-radius: 6px;
+
+        //     font-weight: 900;
+        //     font-size: 1.2rem;
+
+        //     color: #39ff14;
+
+        //     // text-shadow:
+        //     //   0 0 5px #39ff14,
+        //     //   0 0 10px #39ff14,
+        //     //   0 0 20px #39ff14;
+
+
+        //   text-shadow:
+        //     0 0 2px rgba(57, 255, 20, 0.4);
+
+        //     line-height: 1;
+        //     cursor: pointer;
+        //   }
         .note-rank-square {
   display: inline-flex;
   align-items: center;
@@ -21417,32 +21481,49 @@ export default function EvaluationsTable() {
 
   font-weight: 900;
   font-size: 1.2rem;
-
-  color: #39ff14;
-
-  // text-shadow:
-  //   0 0 5px #39ff14,
-  //   0 0 10px #39ff14,
-  //   0 0 20px #39ff14;
-
-
-text-shadow:
-  0 0 2px rgba(57, 255, 20, 0.4);
-
   line-height: 1;
+
+  color: #39ff14 !important;
+
+  /* Pas de flou */
+  text-shadow: none;
+
   cursor: pointer;
+
+  transition:
+    transform 0.12s ease,
+    opacity 0.12s ease,
+    border-color 0.12s ease;
 }
+
+.note-rank-square:hover {
+  color: #39ff14 !important;
+  transform: translateY(-1px) scale(1.05);
+}
+        // .note-rank-square.is-pending {
+        //   background: transparent;
+        //   border: 1px dashed var(--border-strong);
+        //   color: var(--text-muted);
+        //   opacity: 0.75;
+        // }
+        // tr:hover .note-rank-square.is-pending {
+        //   opacity: 1;
+        //   border-color: var(--accent-cyan);
+        //   color: var(--accent-cyan);
+        // }
+
         .note-rank-square.is-pending {
-          background: transparent;
-          border: 1px dashed var(--border-strong);
-          color: var(--text-muted);
-          opacity: 0.75;
-        }
-        tr:hover .note-rank-square.is-pending {
-          opacity: 1;
-          border-color: var(--accent-cyan);
-          color: var(--accent-cyan);
-        }
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: #39ff14 !important;
+  opacity: 0.85;
+}
+
+.note-rank-square.is-pending:hover {
+  opacity: 1;
+  color: #39ff14 !important;
+  border-color: #39ff14;
+}
         .note-rank-square.is-evaluated {
           border-style: solid;
         }
