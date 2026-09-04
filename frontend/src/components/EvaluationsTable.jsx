@@ -21420,10 +21420,14 @@ export default function EvaluationsTable() {
 
   color: #39ff14;
 
-  text-shadow:
-    0 0 5px #39ff14,
-    0 0 10px #39ff14,
-    0 0 20px #39ff14;
+  // text-shadow:
+  //   0 0 5px #39ff14,
+  //   0 0 10px #39ff14,
+  //   0 0 20px #39ff14;
+
+
+text-shadow:
+  0 0 2px rgba(57, 255, 20, 0.4);
 
   line-height: 1;
   cursor: pointer;
