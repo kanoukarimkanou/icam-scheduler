@@ -15726,12 +15726,12 @@ export default function RendezVousPage() {
           display: block;
         }
 
-        /* Alternance de lignes pour guider l'œil sur une matrice large */
-        .matrix-table tbody tr:nth-child(even) td {
-          background-color: rgba(148, 163, 184, 0.025);
+        /* Fond sombre forcé sur toutes les cellules : plus aucune cellule blanche possible */
+        .matrix-table tbody td {
+          background-color: #111726 !important;
         }
         .matrix-table tbody tr:nth-child(even) td.matrix-student-cell {
-          background: #131a2b !important;
+          background-color: #131a2b !important;
         }
 
         .matrix-cell {
@@ -15745,10 +15745,10 @@ export default function RendezVousPage() {
           border-bottom: 1px solid var(--border-subtle);
         }
         .matrix-cell-filled {
-          background-color: rgba(37, 99, 235, 0.10);
+          background-color: rgba(37, 99, 235, 0.16) !important;
         }
         .matrix-cell-empty {
-          background-color: transparent;
+          background-color: #111726 !important;
         }
         .matrix-slot {
           font-family: 'JetBrains Mono', monospace;
@@ -16011,7 +16011,7 @@ export default function RendezVousPage() {
           border-right: 1px solid rgba(37, 99, 235, 0.35) !important;
         }
         .chef-view .matrix-cell-filled {
-          background-color: rgba(22, 163, 74, 0.10) !important;
+          background-color: rgba(22, 163, 74, 0.18) !important;
         }
         .chef-view .matrix-slot-time {
           color: #ffffff;
