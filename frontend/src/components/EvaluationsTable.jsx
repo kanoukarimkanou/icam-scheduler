@@ -21398,77 +21398,43 @@ const chefColWidth = density === 'compact' ? 92 : 115;
         }
         .density-toggle .btn { font-size: 0.72rem; padding: 0.2rem 0.55rem; }
 
-        // .note-rank-square {
-        //   display: inline-flex;
-        //   align-items: center;
-        //   justify-content: center;
-        //   // min-width: 26px;
-        //   // height: 22px;
-        //   // padding: 0 5px;
-        //   // border-radius: 6px;
-        //   // font-weight: 700;
-        //   // font-size: 0.66rem;
-        //   min-width: 36px;        /* ← plus large */
-        //   height: 30px;           /* ← plus haut */
-        //   padding: 0 8px;         /* ← plus d'air intérieur */
-        //   border-radius: 8px;     /* ← angles un peu plus doux */
-        //   font-weight: 700;
-        //   font-size: 0.82rem;     /* ← LE GROS CHANGEMENT : le chiffre est bien plus gros
-        //   line-height: 1;
-        //   cursor: pointer;
-        //   transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
-        // }
-        // .note-rank-square.is-pending {
-        //   background: transparent;
-        //   border: 1px dashed var(--border-strong);
-        //   color: var(--text-muted);
-        //   opacity: 0.75;
-        // }
-        // tr:hover .note-rank-square.is-pending {
-        //   opacity: 1;
-        //   border-color: var(--accent-cyan);
-        //   color: var(--accent-cyan);
-        // }
-        // .note-rank-square.is-evaluated {
-        //   border-style: solid;
-        // }
-        // .note-rank-square.is-assigned {
-        //   box-shadow: 0 0 0 2px #10b981, 0 2px 8px rgba(16, 185, 129, 0.35);
-        // }
-        /* ===== REMPLACE TOUT CE BLOC ===== */
         .note-rank-square {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 42px;
-          height: 34px;
-          padding: 0 9px;
-          border-radius: 8px;
-          font-weight: 800;
-          font-size: 0.92rem;
+          // min-width: 26px;
+          // height: 22px;
+          // padding: 0 5px;
+          // border-radius: 6px;
+          // font-weight: 700;
+          // font-size: 0.66rem;
+          min-width: 36px;        /* ← plus large */
+          height: 30px;           /* ← plus haut */
+          padding: 0 8px;         /* ← plus d'air intérieur */
+          border-radius: 8px;     /* ← angles un peu plus doux */
+          font-weight: 700;
+          font-size: 0.82rem;     /* ← LE GROS CHANGEMENT : le chiffre est bien plus gros
           line-height: 1;
-          letter-spacing: 0.02em;
+          cursor: pointer;
           transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
         }
         .note-rank-square.is-pending {
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px dashed rgba(148, 163, 184, 0.4);
-          color: #ffffff;
-          opacity: 1;
+          background: transparent;
+          border: 1px dashed var(--border-strong);
+          color: var(--text-muted);
+          opacity: 0.75;
         }
         tr:hover .note-rank-square.is-pending {
+          opacity: 1;
           border-color: var(--accent-cyan);
-          color: #ffffff;
-          background: rgba(41, 211, 211, 0.12);
-          transform: scale(1.05);
+          color: var(--accent-cyan);
         }
         .note-rank-square.is-evaluated {
           border-style: solid;
         }
         .note-rank-square.is-assigned {
-          box-shadow: 0 0 0 2.5px #10b981, 0 4px 12px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 0 0 2px #10b981, 0 2px 8px rgba(16, 185, 129, 0.35);
         }
-        /* ===== FIN DU BLOC ===== */
         .note-rank-square.is-assigned:hover {
           transform: translateY(-1px) scale(1.05);
         }
