@@ -4532,7 +4532,7 @@ export default function ImportPage() {
       <div className="import-page-wrapper">
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <div>
-            <h2 className="fw-bold mb-0" style={{ fontSize: '1.5rem' }}>📥 Import &amp; Gestion des données</h2>
+            <h2 className="fw-bold mb-0" style={{ fontSize: '1.5rem' }}>Import &amp; Gestion des données</h2>
             <small className="text-muted">
               Importez vos fichiers CSV, questionnaires Moodle (Aptitudes, Appétences, Vœux) ou téléversez directement les dossiers de CVs et LMs.
             </small>
