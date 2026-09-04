@@ -21200,9 +21200,7 @@ export default function EvaluationsTable() {
   // const rowMinHeight = density === 'compact' ? '38px' : '52px';
   // const firstColWidth = density === 'compact' ? 168 : 200;
   // const chefColWidth = density === 'compact' ? 76 : 96;
-const rowMinHeight = density === 'compact' ? '54px' : '72px';
-const firstColWidth = density === 'compact' ? 200 : 240;
-const chefColWidth = density === 'compact' ? 92 : 115;
+
   return (
     <>
       <style>{`
@@ -21337,12 +21335,9 @@ const chefColWidth = density === 'compact' ? 92 : 115;
           overflow: auto;
         }
         .eval-matrix {
-          // font-size: 0.76rem;
-          font-size: 0.85rem;
-
+          font-size: 0.76rem;
         }
         .eval-matrix td, .eval-matrix th {
-          //padding: 0.2rem 0.3rem;
           padding: 0.2rem 0.3rem;
           vertical-align: middle;
           min-height: ${rowMinHeight};
@@ -21379,8 +21374,6 @@ const chefColWidth = density === 'compact' ? 92 : 115;
           letter-spacing: 0.4px;
           cursor: help;
           border-bottom: 1px dashed rgba(148,163,184,0.6);
-          font-size: 0.82rem;              /* ← plus lisible */
-
         }
         .student-name-cell {
           display: flex;
@@ -21393,8 +21386,7 @@ const chefColWidth = density === 'compact' ? 92 : 115;
           text-overflow: ellipsis;
           white-space: nowrap;
           font-weight: 600;
-          // font-size: 0.8rem;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
         }
         .density-toggle .btn { font-size: 0.72rem; padding: 0.2rem 0.55rem; }
 
@@ -21402,18 +21394,12 @@ const chefColWidth = density === 'compact' ? 92 : 115;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          // min-width: 26px;
-          // height: 22px;
-          // padding: 0 5px;
-          // border-radius: 6px;
-          // font-weight: 700;
-          // font-size: 0.66rem;
-          min-width: 36px;        /* ← plus large */
-          height: 30px;           /* ← plus haut */
-          padding: 0 8px;         /* ← plus d'air intérieur */
-          border-radius: 8px;     /* ← angles un peu plus doux */
+          min-width: 26px;
+          height: 22px;
+          padding: 0 5px;
+          border-radius: 6px;
           font-weight: 700;
-          font-size: 0.82rem;     /* ← LE GROS CHANGEMENT : le chiffre est bien plus gros
+          font-size: 0.66rem;
           line-height: 1;
           cursor: pointer;
           transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
