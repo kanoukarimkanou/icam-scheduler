@@ -30605,30 +30605,30 @@ export default function EvaluationsTable() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 38px;
-          height: 28px;
+          min-width: 40px;
+          height: 30px;
           padding: 0 6px;
           border-radius: 6px;
           font-weight: 700;
-          font-size: 0.78rem;
+          font-size: 0.82rem;
           line-height: 1;
           color: var(--text-primary);
           cursor: pointer;
-          transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease;
+          transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
         }
         .note-rank-square:hover {
           transform: translateY(-1px) scale(1.05);
         }
 
+        /* Voeux prioritaires (1er a 3e), pas encore evalues */
         .note-rank-square.is-pending {
-          background: transparent;
-          border: 1px dashed var(--border-strong);
-          color: var(--text-muted);
-          opacity: 0.9;
+          background: rgba(59, 111, 224, 0.12);
+          border: 1px solid rgba(59, 111, 224, 0.55);
+          color: #eaf0ff;
+          opacity: 1;
         }
         .note-rank-square.is-pending:hover {
-          opacity: 1;
-          color: var(--accent-violet);
+          background: rgba(59, 111, 224, 0.22);
           border-color: var(--accent-violet);
         }
         .note-rank-square.is-evaluated {
@@ -30641,28 +30641,30 @@ export default function EvaluationsTable() {
           transform: translateY(-1px) scale(1.05);
         }
 
-        /* Voeux secondaires (rangs 4 a 10) */
+        /* Voeux secondaires (rangs 4 a 10), pas encore evalues */
         .note-rank-square.is-choice-secondary {
-          border: 1px dashed rgba(148, 163, 184, 0.35);
-          color: #94a3b8 !important;
-          opacity: 0.75;
-          font-size: 0.7rem;
+          background: rgba(148, 163, 184, 0.10);
+          border: 1px solid rgba(148, 163, 184, 0.4);
+          color: #dbe4f0 !important;
+          opacity: 1;
+          font-size: 0.78rem;
+          font-weight: 600;
         }
         .note-rank-square.is-choice-secondary:hover {
-          opacity: 1;
-          color: var(--accent-cyan) !important;
+          background: var(--accent-cyan-soft);
+          color: #ffffff !important;
           border-color: var(--accent-cyan);
         }
         .note-rank-square.is-choice-secondary.is-evaluated {
           border-style: solid;
-          opacity: 1;
+          font-weight: 700;
         }
 
         /* Non choisi par l'etudiant */
         .note-rank-square.is-unselected {
-          border: 1px dashed rgba(148, 163, 184, 0.16);
-          color: #475569 !important;
-          opacity: 0.35;
+          border: 1px dashed rgba(148, 163, 184, 0.22);
+          color: #64748b !important;
+          opacity: 0.55;
         }
         .note-rank-square.is-unselected:hover {
           opacity: 1;
