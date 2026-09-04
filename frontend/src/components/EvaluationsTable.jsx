@@ -24296,7 +24296,7 @@ export default function EvaluationsTable() {
                 onClick={() => setModalAffectationsOpen(true)}
                 className="px-3 py-2 fw-semibold"
               >
-                🎯 Résultats Affectations ({affectations.length} / {etudiants.length})
+                 Résultats Affectations ({affectations.length} / {etudiants.length})
               </Button>
             )}
 
@@ -24307,7 +24307,7 @@ export default function EvaluationsTable() {
                 onClick={() => setShowResetModal(true)}
                 title="Supprimer les évaluations ou les affectations"
               >
-                <span>🗑️</span>
+                <span></span>
                 <span>Vider...</span>
               </Button>
             )}
@@ -24318,7 +24318,7 @@ export default function EvaluationsTable() {
               onClick={handleExportEvaluationsExcel}
               className="px-3 py-2 fw-semibold"
             >
-              📊 Exporter Notes
+               Exporter Notes
             </Button>
 
             {isAdmin && (
@@ -24328,7 +24328,7 @@ export default function EvaluationsTable() {
                 onClick={handleExportAffectationsExcel}
                 className="px-3 py-2 fw-semibold"
               >
-                📥 Exporter Affectations (.xlsx)
+                 Exporter Affectations (.xlsx)
               </Button>
             )}
 
@@ -24345,7 +24345,7 @@ export default function EvaluationsTable() {
           <div className="gauges-dashboard-card shadow-sm">
             <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
               <div className="d-flex align-items-center gap-2">
-                <span className="fw-bold text-white fs-6">📊 Vos Jauges de notation autorisées</span>
+                <span className="fw-bold text-white fs-6"> Vos Jauges de notation autorisées</span>
                 <Badge bg="secondary" className="font-monospace">
                   {chefGaugesStats.evaluatedTotal} / {chefGaugesStats.assignedTotal} évalué(s)
                 </Badge>
@@ -24548,11 +24548,11 @@ export default function EvaluationsTable() {
 
                         <div className="chef-status-badges">
                           <Badge bg={rankBadgeVariant(rankNum)} text={rankBadgeText(rankNum)}>
-                            🎯 {rankLabel(rankNum)} choix (Vœu Moodle)
+                             {rankLabel(rankNum)} choix (Vœu Moodle)
                           </Badge>
                           {aff && (
                             <Badge bg={isAssignedToMe ? 'success' : 'dark'} className="border border-secondary">
-                              {isAssignedToMe ? '🎯 Affecté à vous' : `Affecté : ${aff.chef_nom}`}
+                              {isAssignedToMe ? ' Affecté à vous' : `Affecté : ${aff.chef_nom}`}
                             </Badge>
                           )}
                           {etud.cv_path && (
@@ -24879,7 +24879,7 @@ export default function EvaluationsTable() {
         <div className="radar-modal-header" style={{ background: 'rgba(239, 68, 68, 0.15)', borderBottom: '1px solid rgba(239, 68, 68, 0.3)' }}>
           <button type="button" className="radar-modal-close" onClick={() => setShowResetModal(false)}>✕</button>
           <div className="radar-modal-eyebrow" style={{ color: '#f87171' }}>Zone d'administration</div>
-          <h4 className="radar-modal-title" style={{ color: '#ffffff', margin: 0 }}>🗑️ Remise à zéro des résultats</h4>
+          <h4 className="radar-modal-title" style={{ color: '#ffffff', margin: 0 }}> Remise à zéro des résultats</h4>
         </div>
         <div className="radar-modal-body" style={{ minHeight: 'auto', padding: '1.5rem' }}>
           <p className="text-light">
@@ -25009,7 +25009,7 @@ export default function EvaluationsTable() {
                       <td>
                         {rankInfo ? (
                           <Badge bg={rankBadgeVariant(rankInfo.rank)} text={rankBadgeText(rankInfo.rank)}>
-                            🎯 {rankLabel(rankInfo.rank)} choix (Vœu Réel)
+                             {rankLabel(rankInfo.rank)} choix (Vœu Réel)
                           </Badge>
                         ) : aff ? (
                           <Badge bg="secondary">Hors Vœux</Badge>
