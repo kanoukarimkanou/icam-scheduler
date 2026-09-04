@@ -30451,6 +30451,14 @@ const STYLE_SHEET = `
 .matrix-table.compact th, .matrix-table.compact td { padding: 0.42rem 0.5rem; font-size: 0.86rem; }
 .matrix-table.comfortable th, .matrix-table.comfortable td { padding: 0.75rem 0.8rem; font-size: 0.92rem; }
 
+/* Bootstrap fixe --bs-table-bg sur --bs-body-bg (blanc) par defaut : on force
+   un fond sombre uniforme sur toutes les cellules du corps du tableau pour
+   que les pastilles non cochees restent visibles, aligne avec la colonne
+   etudiant (meme teinte #131c2e). */
+.matrix-table > :not(caption) > tbody > tr > * {
+  background-color: #131c2e !important;
+  color: var(--text) !important;
+}
 .matrix-table tbody tr:hover td { background-color: var(--surface-hover) !important; }
 
 .student-cell { white-space: normal; }
