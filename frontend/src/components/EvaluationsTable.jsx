@@ -30509,21 +30509,32 @@ export default function EvaluationsTable() {
           border-color: #dc2626 !important;
         }
 
+        .eval-page-wrapper .badge {
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 0.38em 0.7em;
+          letter-spacing: 0.2px;
+        }
         .eval-page-wrapper .badge.bg-success, .eval-page-wrapper .btn-success {
-          background-color: var(--accent-emerald) !important; border-color: var(--accent-emerald) !important; color: #06231a !important;
+          background-color: var(--accent-emerald) !important; border-color: var(--accent-emerald) !important; color: #ffffff !important;
         }
         .eval-page-wrapper .badge.bg-info, .eval-page-wrapper .btn-info, .eval-page-wrapper .btn-outline-info {
           --bs-btn-color: var(--accent-cyan); --bs-btn-border-color: var(--accent-cyan); --bs-btn-hover-bg: var(--accent-cyan);
         }
-        .eval-page-wrapper .badge.bg-info { background-color: var(--accent-cyan) !important; color: #06231a !important; }
-        .eval-page-wrapper .badge.bg-warning { background-color: var(--accent-amber) !important; color: #241a03 !important; }
-        .eval-page-wrapper .badge.bg-danger { background-color: var(--accent-coral) !important; }
+        .eval-page-wrapper .badge.bg-info { background-color: var(--accent-cyan) !important; color: #ffffff !important; }
+        .eval-page-wrapper .badge.bg-warning { background-color: var(--accent-amber) !important; color: #1a1203 !important; }
+        .eval-page-wrapper .badge.bg-danger { background-color: var(--accent-coral) !important; color: #ffffff !important; }
         .eval-page-wrapper .badge.bg-primary, .eval-page-wrapper .btn-primary {
           background-color: var(--accent-violet) !important; border-color: var(--accent-violet) !important;
         }
-        .eval-page-wrapper .badge.bg-dark { background-color: var(--panel-raised) !important; border: 1px solid var(--border-subtle); }
-        .eval-page-wrapper .btn-success { color: #06231a !important; }
-        .eval-page-wrapper .btn-outline-info:hover { color: #06231a !important; }
+        .eval-page-wrapper .badge.bg-dark { background-color: var(--panel-raised) !important; border: 1px solid var(--border-strong); color: var(--text-primary) !important; }
+        .eval-page-wrapper .badge.bg-secondary, .eval-page-wrapper a.badge.bg-secondary {
+          background-color: #2c3a52 !important;
+          border: 1px solid var(--border-strong);
+          color: #e7edf6 !important;
+        }
+        .eval-page-wrapper .btn-success { color: #ffffff !important; }
+        .eval-page-wrapper .btn-outline-info:hover { color: #ffffff !important; }
 
         .eval-matrix-wrapper {
           max-height: 76vh;
@@ -30842,7 +30853,7 @@ export default function EvaluationsTable() {
           justify-content: flex-end;
         }
         .chef-doc-link {
-          font-size: 0.72rem;
+          font-size: 0.76rem;
         }
         .chef-card-body-row {
           padding: 0.9rem 1.1rem 1rem 1.1rem;
