@@ -11713,21 +11713,22 @@ export default function RendezVousPage() {
           gap: 3px;
         }
         .matrix-slot-date {
-          font-size: 0.63rem;
-          color: var(--text-faint);
-          font-weight: 600;
-          letter-spacing: 0.02em;
+          font-size: 0.7rem;
+          color: #aab6cc;
+          font-weight: 700;
+          letter-spacing: 0.03em;
         }
         .matrix-slot-time {
-          font-size: 0.85rem;
+          font-size: 0.95rem;
           font-weight: 800;
-          color: #eaf1ff;
-          background: rgba(37, 99, 235, 0.22);
-          border: 1px solid rgba(37, 99, 235, 0.38);
+          color: #ffffff;
+          background: #1d4ed8;
+          border: 1px solid #3b82f6;
           border-radius: 6px;
-          padding: 2px 9px;
+          padding: 3px 10px;
           line-height: 1.35;
           font-variant-numeric: tabular-nums;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
         }
         .matrix-slot + .matrix-slot {
           margin-top: 5px;
@@ -11968,12 +11969,12 @@ export default function RendezVousPage() {
           background-color: rgba(22, 163, 74, 0.16) !important;
         }
         .chef-view .matrix-slot-date {
-          color: var(--text-faint);
+          color: #aab6cc;
         }
         .chef-view .matrix-slot-time {
-          color: #ecfdf3;
-          background: rgba(22, 163, 74, 0.24);
-          border-color: rgba(22, 163, 74, 0.4);
+          color: #ffffff;
+          background: #15803d;
+          border-color: #22c55e;
         }
       `}</style>
 
