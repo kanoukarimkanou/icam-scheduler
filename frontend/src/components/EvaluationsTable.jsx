@@ -21390,20 +21390,44 @@ export default function EvaluationsTable() {
         }
         .density-toggle .btn { font-size: 0.72rem; padding: 0.2rem 0.55rem; }
 
+        // .note-rank-square {
+        //   display: inline-flex;
+        //   align-items: center;
+        //   justify-content: center;
+        //   min-width: 26px;
+        //   height: 22px;
+        //   padding: 0 5px;
+        //   border-radius: 6px;
+        //   font-weight: 700;
+        //   font-size: 0.66rem;
+        //   line-height: 1;
+        //   cursor: pointer;
+        //   transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+        // }
         .note-rank-square {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 26px;
-          height: 22px;
-          padding: 0 5px;
-          border-radius: 6px;
-          font-weight: 700;
-          font-size: 0.66rem;
-          line-height: 1;
-          cursor: pointer;
-          transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
-        }
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 26px;
+  height: 22px;
+  padding: 0 5px;
+
+  border-radius: 6px;
+
+  font-weight: 900;
+  font-size: 1.2rem;
+
+  color: #39ff14;
+
+  text-shadow:
+    0 0 5px #39ff14,
+    0 0 10px #39ff14,
+    0 0 20px #39ff14;
+
+  line-height: 1;
+  cursor: pointer;
+}
         .note-rank-square.is-pending {
           background: transparent;
           border: 1px dashed var(--border-strong);
