@@ -11,6 +11,34 @@ export const cleanCellString = (val) => {
     .trim();
 };
 
+// Detection des caracteres speciaux ou mal encodes (mojibake UTF-8 / Windows-1252)
+export const hasCorruptedEncoding = (str) => {
+  if (!str) return false;
+  const mojibakeRegex = /Ã©|Ã¨|Ã |Ãª|Ã§|Ã®|Ã´|Ã¹|Ã»|Ã¢|Ã«|Ã¯|Ã¼|Ã¶|Ã¤|Â|â€™|/i;
+  return mojibakeRegex.test(str);
+};
+
+// Reparation automatique proposee en suggestion de correction
+export const autoRepairMojibake = (str) => {
+  if (!str) return '';
+  return str
+    .replace(/Ã©/g, 'e')
+    .replace(/Ã¨/g, 'e')
+    .replace(/Ã /g, 'a')
+    .replace(/Ãª/g, 'e')
+    .replace(/Ã§/g, 'c')
+    .replace(/Ã®/g, 'i')
+    .replace(/Ã´/g, 'o')
+    .replace(/Ã¹/g, 'u')
+    .replace(/Ã»/g, 'u')
+    .replace(/Ã¢/g, 'a')
+    .replace(/Ã«/g, 'e')
+    .replace(/Ã¯/g, 'i')
+    .replace(/â€™/g, "'")
+    .replace(/Â/g, '')
+    .replace(//g, '');
+};
+
 // Validation du format d adresse email
 export const isValidEmail = (email) => {
   if (!email) return false;
@@ -56,7 +84,7 @@ export const validateChefsData = (rows) => {
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier est vide ou ne contient pas de donnees.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier est vide ou ne contient pas de donnees.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -65,6 +93,7 @@ export const validateChefsData = (rows) => {
 
   dataRows.forEach((r, idx) => {
     const ligneNum = idx + 2;
+    const rowIndex = idx + 1;
     const nom = cleanCellString(r[0]);
     const specialite = cleanCellString(r[1]);
     const email = cleanCellString(r[2]).toLowerCase();
@@ -78,22 +107,40 @@ export const validateChefsData = (rows) => {
     let isRowBlocked = false;
 
     if (!nom) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'nom', message: 'Le nom du chef de projet est obligatoire.' });
+      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'nom', message: 'Le nom du chef de projet est obligatoire.', rawRow: r });
       isRowBlocked = true;
+    } else if (hasCorruptedEncoding(nom)) {
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'AVERTISSEMENT',
+        champ: 'nom',
+        message: `Caractere mal encode detecte dans le nom "${nom}". Suggestion : "${autoRepairMojibake(nom)}".`,
+        rawRow: r,
+      });
     }
 
     if (!specialite) {
-      anomalies.push({ ligne: ligneNum, type: 'AVERTISSEMENT', champ: 'specialite', message: 'Specialite non renseignee. La valeur "Generaliste" sera attribuee.' });
+      anomalies.push({ ligne: ligneNum, rowIndex, type: 'AVERTISSEMENT', champ: 'specialite', message: 'Specialite non renseignee. La valeur "Generaliste" sera attribuee.', rawRow: r });
+    } else if (hasCorruptedEncoding(specialite)) {
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'AVERTISSEMENT',
+        champ: 'specialite',
+        message: `Caractere mal encode detecte dans la specialite "${specialite}". Suggestion : "${autoRepairMojibake(specialite)}".`,
+        rawRow: r,
+      });
     }
 
     if (!email) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'email', message: 'L adresse email est obligatoire.' });
+      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `L adresse email est obligatoire pour "${nom || 'Intervenant inconnu'}".`, rawRow: r });
       isRowBlocked = true;
     } else if (!isValidEmail(email)) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'email', message: `Format d adresse email invalide : ${email}` });
+      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `Format d adresse email invalide : ${email}`, rawRow: r });
       isRowBlocked = true;
     } else if (seenEmails.has(email)) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'email', message: `Adresse email en doublon dans le fichier : ${email}` });
+      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `Adresse email en doublon dans le fichier : ${email}`, rawRow: r });
       isRowBlocked = true;
     } else {
       seenEmails.add(email);
@@ -132,7 +179,7 @@ export const validateEtudiantsData = (rows) => {
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient pas de donnees.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient pas de donnees.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -141,6 +188,7 @@ export const validateEtudiantsData = (rows) => {
 
   dataRows.forEach((r, idx) => {
     const ligneNum = idx + 2;
+    const rowIndex = idx + 1;
     const col0 = cleanCellString(r[0]);
     const col1 = cleanCellString(r[1]);
     const col2 = cleanCellString(r[2]);
@@ -173,21 +221,70 @@ export const validateEtudiantsData = (rows) => {
     }
 
     if (!email) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'email', message: 'Adresse email absente.' });
+      const info = (nom || prenom) ? ` (Texte detecte : "${nom} ${prenom}". S agit-il d une ligne parasite ?)` : '';
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'BLOQUANT',
+        champ: 'email',
+        message: `Adresse email absente${info}`,
+        rawRow: r,
+      });
       isRowBlocked = true;
     } else if (!isValidEmail(email)) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'email', message: `Format d email invalide : ${email}` });
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'BLOQUANT',
+        champ: 'email',
+        message: `Format d email invalide : "${email}" pour ${nom} ${prenom}`,
+        rawRow: r,
+      });
       isRowBlocked = true;
     } else if (seenEmails.has(email)) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'email', message: `Adresse email en doublon dans le fichier : ${email}` });
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'BLOQUANT',
+        champ: 'email',
+        message: `Adresse email en doublon dans le fichier : "${email}"`,
+        rawRow: r,
+      });
       isRowBlocked = true;
     } else {
       seenEmails.add(email);
     }
 
     if (!nom) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'nom', message: 'Nom de famille manquant.' });
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'BLOQUANT',
+        champ: 'nom',
+        message: `Nom de famille manquant (Email : "${email}")`,
+        rawRow: r,
+      });
       isRowBlocked = true;
+    } else if (hasCorruptedEncoding(nom)) {
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'AVERTISSEMENT',
+        champ: 'nom',
+        message: `Caractere mal encode detecte dans le nom "${nom}". Suggestion : "${autoRepairMojibake(nom)}".`,
+        rawRow: r,
+      });
+    }
+
+    if (prenom && hasCorruptedEncoding(prenom)) {
+      anomalies.push({
+        ligne: ligneNum,
+        rowIndex,
+        type: 'AVERTISSEMENT',
+        champ: 'prenom',
+        message: `Caractere mal encode detecte dans le prenom "${prenom}". Suggestion : "${autoRepairMojibake(prenom)}".`,
+        rawRow: r,
+      });
     }
 
     if (!isRowBlocked) {
@@ -222,7 +319,7 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Veuillez importer les etudiants avant d importer les voeux.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Veuillez importer les etudiants avant d importer les voeux.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -231,7 +328,7 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des chefs de projet est vide. Veuillez importer les chefs de projet avant les voeux.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des chefs de projet est vide. Veuillez importer les chefs de projet avant les voeux.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -240,7 +337,7 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient aucune donnee.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient aucune donnee.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -257,7 +354,7 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
     return {
       status: 'BLOQUANT',
       stats: { total: dataRows.length, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'structure', message: 'Colonne "adresse de courriel" introuvable dans la premiere ligne du fichier.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'structure', message: 'Colonne "adresse de courriel" introuvable dans la premiere ligne du fichier.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -284,7 +381,7 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
     return {
       status: 'BLOQUANT',
       stats: { total: dataRows.length, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'structure', message: 'Aucune colonne de choix (1er Choix, 2nd Choix, etc.) n a ete reconnue dans l entete.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'structure', message: 'Aucune colonne de choix (1er Choix, 2nd Choix, etc.) n a ete reconnue dans l entete.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -295,21 +392,24 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
 
   dataRows.forEach((r, idx) => {
     const ligneNum = idx + 2;
+    const rowIndex = idx + 1;
     const email = cleanCellString(r[emailColIdx]).toLowerCase();
 
     if (!email) return;
 
     if (!isValidEmail(email)) {
-      anomalies.push({ ligne: ligneNum, type: 'BLOQUANT', champ: 'email', message: `Adresse email invalide : ${email}` });
+      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `Adresse email invalide : ${email}`, rawRow: r });
       return;
     }
 
     if (seenEmailsInFile.has(email)) {
       anomalies.push({
         ligne: ligneNum,
+        rowIndex,
         type: 'AVERTISSEMENT',
         champ: 'doublon',
         message: `Reponse multiple detectee pour ${email}. La ligne ${ligneNum} ecrasera la ligne precedente ${seenEmailsInFile.get(email)}.`,
+        rawRow: r,
       });
     }
     seenEmailsInFile.set(email, ligneNum);
@@ -319,9 +419,11 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
     if (!student) {
       anomalies.push({
         ligne: ligneNum,
+        rowIndex,
         type: 'AVERTISSEMENT',
         champ: 'etudiant',
         message: `L etudiant ${email} n est pas enregistre dans la base. Ses voeux ne pourront pas etre injectes.`,
+        rawRow: r,
       });
       return;
     }
@@ -338,9 +440,11 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
       if (!chef) {
         anomalies.push({
           ligne: ligneNum,
+          rowIndex,
           type: 'AVERTISSEMENT',
           champ: `choix_${rank}`,
           message: `Choix ${rank} non reconnu pour ${student.nom} ${student.prenom} : "${txt}"`,
+          rawRow: r,
         });
         return;
       }
@@ -348,9 +452,11 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
       if (selectedChefsForStudent.has(chef.id)) {
         anomalies.push({
           ligne: ligneNum,
+          rowIndex,
           type: 'AVERTISSEMENT',
           champ: `choix_${rank}`,
           message: `Le chef ${chef.nom} a ete selectionne plusieurs fois par ${student.nom} ${student.prenom}. Seul le rang le plus prioritaire sera conserve.`,
+          rawRow: r,
         });
         return;
       }
@@ -359,14 +465,15 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
       choices.push({ rank, chefId: chef.id, chefNom: chef.nom });
     });
 
-    // Verification de la completude des 3 premiers choix
     const top3Count = choices.filter((c) => c.rank <= 3).length;
     if (top3Count < 3) {
       anomalies.push({
         ligne: ligneNum,
+        rowIndex,
         type: 'AVERTISSEMENT',
         champ: 'top3',
         message: `L etudiant ${student.nom} ${student.prenom} n a formule que ${top3Count} choix valide(s) sur les 3 requis pour les entretiens.`,
+        rawRow: r,
       });
     }
 
@@ -380,14 +487,15 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
     }
   });
 
-  // Identification des etudiants inscrits n ayant formule aucun voeu (non-repondants)
   const nonRespondents = etudiantsList.filter((e) => !respondentsEmailSet.has(e.adresse_email.toLowerCase().trim()));
   if (nonRespondents.length > 0) {
     anomalies.push({
       ligne: 0,
+      rowIndex: -1,
       type: 'AVERTISSEMENT',
       champ: 'non_repondants',
       message: `${nonRespondents.length} etudiant(s) inscrit(s) n ont formule aucun voeu : ${nonRespondents.map((e) => `${e.nom} ${e.prenom}`).join(', ')}.`,
+      rawRow: [],
     });
   }
 
@@ -419,7 +527,7 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Veuillez importer les etudiants d abord.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Veuillez importer les etudiants d abord.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -428,7 +536,7 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'prerequis', message: 'Aucune competence active dans le referentiel. Veuillez configurer le referentiel d abord.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'Aucune competence active dans le referentiel. Veuillez configurer le referentiel d abord.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -437,7 +545,7 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient aucune donnee.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient aucune donnee.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -454,7 +562,7 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
     return {
       status: 'BLOQUANT',
       stats: { total: dataRows.length, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, type: 'BLOQUANT', champ: 'structure', message: 'Colonne email/courriel introuvable.' }],
+      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'structure', message: 'Colonne email/courriel introuvable.', rawRow: [] }],
       cleanPayload: [],
     };
   }
@@ -464,6 +572,7 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
 
   dataRows.forEach((r, idx) => {
     const ligneNum = idx + 2;
+    const rowIndex = idx + 1;
     const email = cleanCellString(r[emailColIdx]).toLowerCase();
     if (!email) return;
 
@@ -471,9 +580,11 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
     if (!student) {
       anomalies.push({
         ligne: ligneNum,
+        rowIndex,
         type: 'AVERTISSEMENT',
         champ: 'etudiant',
         message: `Ligne ignoree : ${email} n est pas enregistre dans la table des etudiants.`,
+        rawRow: r,
       });
       return;
     }
@@ -510,13 +621,13 @@ export const validateDocumentsList = (filesList, etudiantsList = []) => {
     return {
       status: 'BLOQUANT',
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Impossible de rapprocher les documents.' }],
+      anomalies: [{ ligne: 0, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Impossible de rapprocher les documents.', rawRow: [] }],
       cleanPayload: [],
     };
   }
 
   const filesArray = Array.from(filesList || []);
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 Mo
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   filesArray.forEach((file, idx) => {
     const fullPath = file.webkitRelativePath || file.name;
@@ -533,9 +644,11 @@ export const validateDocumentsList = (filesList, etudiantsList = []) => {
     if (!isPdf) {
       anomalies.push({
         ligne: idx + 1,
+        rowIndex: idx,
         type: 'BLOQUANT',
         champ: 'format',
         message: `Fichier rejete : "${file.name}" n est pas un fichier PDF.`,
+        rawRow: [file.name],
       });
       return;
     }
@@ -543,9 +656,11 @@ export const validateDocumentsList = (filesList, etudiantsList = []) => {
     if (file.size > MAX_FILE_SIZE) {
       anomalies.push({
         ligne: idx + 1,
+        rowIndex: idx,
         type: 'BLOQUANT',
         champ: 'taille',
         message: `Fichier trop volumineux : "${file.name}" depasse 5 Mo (${(file.size / (1024 * 1024)).toFixed(1)} Mo).`,
+        rawRow: [file.name],
       });
       return;
     }
@@ -555,9 +670,11 @@ export const validateDocumentsList = (filesList, etudiantsList = []) => {
     if (!matchedStudent) {
       anomalies.push({
         ligne: idx + 1,
+        rowIndex: idx,
         type: 'AVERTISSEMENT',
         champ: 'etudiant',
         message: `Etudiant introuvable pour le document : "${folderLabel}". Verifiez l orthographe du dossier.`,
+        rawRow: [folderLabel],
       });
       return;
     }
