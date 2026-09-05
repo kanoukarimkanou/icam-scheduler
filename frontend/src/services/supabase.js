@@ -1,381 +1,3 @@
-// // // // // // // // // // // import { createClient } from '@supabase/supabase-js';
-
-// // // // // // // // // // // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-// // // // // // // // // // // const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// // // // // // // // // // // export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// // // // // // // // // // // const emptySlots = () =>
-// // // // // // // // // // //   Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`slot${i + 1}`, '0']));
-
-// // // // // // // // // // // const normalizeSlots = (slots) => {
-// // // // // // // // // // //   if (Array.isArray(slots)) {
-// // // // // // // // // // //     const obj = {};
-// // // // // // // // // // //     for (let i = 0; i < 40; i++) {
-// // // // // // // // // // //       obj[`slot${i + 1}`] = String(slots[i] ?? '0');
-// // // // // // // // // // //     }
-// // // // // // // // // // //     return obj;
-// // // // // // // // // // //   }
-// // // // // // // // // // //   return slots;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // Normalisation des thématiques / spécialités
-// // // // // // // // // // // export const normalizeSpecialiteKey = (spec) => {
-// // // // // // // // // // //   if (!spec) return '';
-// // // // // // // // // // //   const clean = spec.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-// // // // // // // // // // //   if (clean.includes('calcul') || clean.includes('simulation')) return 'calculs_simulation_numerique';
-// // // // // // // // // // //   if (clean.includes('essai') || clean.includes('caracterisation')) return 'essais_caracterisation';
-// // // // // // // // // // //   if (clean.includes('fab') || clean.includes('proto')) return 'fabrication_prototypage';
-// // // // // // // // // // //   if (clean.includes('conception') || clean.includes('meca')) return 'conception_mecanique';
-// // // // // // // // // // //   if (clean.includes('auto')) return 'automatique_automatisme';
-// // // // // // // // // // //   if (clean.includes('iot') || clean.includes('embarque')) return 'iot_systeme_embarque';
-// // // // // // // // // // //   if (clean.includes('robot') || clean.includes('cobot')) return 'robot_cobot';
-// // // // // // // // // // //   if (clean.includes('vision')) return 'vision';
-// // // // // // // // // // //   if (clean === 'ia' || clean.includes('intelligence')) return 'ia';
-// // // // // // // // // // //   if (clean.includes('ihm') || clean.includes('web') || clean.includes('mobile')) return 'ihm_appli_web_mobile';
-// // // // // // // // // // //   if (clean.includes('ethique') || clean.includes('ergo')) return 'ethique_ergonomie';
-// // // // // // // // // // //   return clean.replace(/[^a-z0-9_]/g, '_');
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // Calcul du classement des chefs pour un étudiant basé sur ses appétences
-// // // // // // // // // // // export const computeChefRanksForStudent = (etudiantAppetences, chefsList) => {
-// // // // // // // // // // //   if (!etudiantAppetences || !chefsList) return new Map();
-
-// // // // // // // // // // //   const scoredChefs = chefsList.map((chef) => {
-// // // // // // // // // // //     const key = normalizeSpecialiteKey(chef.specialite);
-// // // // // // // // // // //     const score = Number(etudiantAppetences[key] ?? 0);
-// // // // // // // // // // //     return {
-// // // // // // // // // // //       chef_id: chef.id,
-// // // // // // // // // // //       score,
-// // // // // // // // // // //       nom: chef.nom || '',
-// // // // // // // // // // //       specialite: chef.specialite,
-// // // // // // // // // // //     };
-// // // // // // // // // // //   });
-
-// // // // // // // // // // //   // Tri par appétence décroissante, puis par ordre alphabétique
-// // // // // // // // // // //   scoredChefs.sort((a, b) => {
-// // // // // // // // // // //     if (b.score !== a.score) return b.score - a.score;
-// // // // // // // // // // //     return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-// // // // // // // // // // //   });
-
-// // // // // // // // // // //   const rankMap = new Map();
-// // // // // // // // // // //   scoredChefs.forEach((sc, index) => {
-// // // // // // // // // // //     rankMap.set(sc.chef_id, {
-// // // // // // // // // // //       rank: index + 1,
-// // // // // // // // // // //       score: sc.score,
-// // // // // // // // // // //     });
-// // // // // // // // // // //   });
-
-// // // // // // // // // // //   return rankMap;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Documents (CV & Lettres de motivation) =====
-// // // // // // // // // // // export const getDocumentPublicUrl = (path) => {
-// // // // // // // // // // //   if (!path) return null;
-// // // // // // // // // // //   const { data } = supabase.storage.from('documents').getPublicUrl(path);
-// // // // // // // // // // //   return `${data.publicUrl}?t=${Date.now()}`;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const uploadDocument = async (etudiant_id, file, type = 'cv') => {
-// // // // // // // // // // //   if (!file) throw new Error('Aucun fichier sélectionné.');
-// // // // // // // // // // //   if (file.size > 5 * 1024 * 1024) throw new Error('Le fichier dépasse 5 Mo.');
-  
-// // // // // // // // // // //   const storagePath = `${type}/${etudiant_id}.pdf`;
-// // // // // // // // // // //   const { error: uploadErr } = await supabase.storage
-// // // // // // // // // // //     .from('documents')
-// // // // // // // // // // //     .upload(storagePath, file, {
-// // // // // // // // // // //       contentType: 'application/pdf',
-// // // // // // // // // // //       upsert: true,
-// // // // // // // // // // //     });
-// // // // // // // // // // //   if (uploadErr) throw uploadErr;
-
-// // // // // // // // // // //   const updatePayload = type === 'cv' ? { cv_path: storagePath } : { lm_path: storagePath };
-// // // // // // // // // // //   const { error: dbErr } = await supabase
-// // // // // // // // // // //     .from('etudiants')
-// // // // // // // // // // //     .update(updatePayload)
-// // // // // // // // // // //     .eq('id', etudiant_id);
-// // // // // // // // // // //   if (dbErr) throw dbErr;
-
-// // // // // // // // // // //   return storagePath;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Chefs de projet =====
-// // // // // // // // // // // export const fetchChefsDeProjet = async () => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('chefs_de_projet').select('*').order('nom');
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Étudiants =====
-// // // // // // // // // // // export const fetchEtudiants = async () => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('etudiants').select('*').order('nom');
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const upsertEtudiant = async (etudiant) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('etudiants')
-// // // // // // // // // // //     .upsert(etudiant, { onConflict: 'adresse_email' })
-// // // // // // // // // // //     .select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Aptitudes & Appétences =====
-// // // // // // // // // // // export const fetchAptitudesByEtudiant = async (etudiant_id) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('aptitudes')
-// // // // // // // // // // //     .select('*')
-// // // // // // // // // // //     .eq('etudiant_id', etudiant_id)
-// // // // // // // // // // //     .maybeSingle();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const fetchApetencesByEtudiant = async (etudiant_id) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('apetences')
-// // // // // // // // // // //     .select('*')
-// // // // // // // // // // //     .eq('etudiant_id', etudiant_id)
-// // // // // // // // // // //     .maybeSingle();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const fetchAllApetences = async () => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('apetences').select('*');
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data || [];
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Sélections / Vœux (Sans priorité en base) =====
-// // // // // // // // // // // export const fetchSelections = async () => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('selections').select(`
-// // // // // // // // // // //     id, etudiant_id, chef_de_projet_id,
-// // // // // // // // // // //     etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path ),
-// // // // // // // // // // //     chefs_de_projet ( id, nom, specialite, email )
-// // // // // // // // // // //   `);
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data.map((s) => ({
-// // // // // // // // // // //     id: s.id,
-// // // // // // // // // // //     etudiant: s.etudiants?.adresse_email,
-// // // // // // // // // // //     chefDeProjet: s.chefs_de_projet?.nom,
-// // // // // // // // // // //     etudiant_id: s.etudiant_id,
-// // // // // // // // // // //     chef_de_projet_id: s.chef_de_projet_id,
-// // // // // // // // // // //   }));
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const saveSelection = async (etudiant_id, chef_de_projet_id) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('selections')
-// // // // // // // // // // //     .upsert({ etudiant_id, chef_de_projet_id }, { onConflict: 'etudiant_id,chef_de_projet_id' })
-// // // // // // // // // // //     .select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const deleteSelection = async (etudiant_id, chef_de_projet_id) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('selections')
-// // // // // // // // // // //     .delete()
-// // // // // // // // // // //     .match({ etudiant_id, chef_de_projet_id });
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Disponibilités =====
-// // // // // // // // // // // export const fetchDisponibiliteChef = async (chef_de_projet_id, date) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('disponibilite_binaire_chefprojet')
-// // // // // // // // // // //     .select('*')
-// // // // // // // // // // //     .match({ chef_de_projet_id, date })
-// // // // // // // // // // //     .maybeSingle();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data || { chef_de_projet_id, date, ...emptySlots() };
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const saveDisponibiliteChef = async (chef_de_projet_id, date, slots) => {
-// // // // // // // // // // //   const slotPayload = normalizeSlots(slots);
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('disponibilite_binaire_chefprojet')
-// // // // // // // // // // //     .upsert({ chef_de_projet_id, date, ...slotPayload }, { onConflict: 'chef_de_projet_id,date' })
-// // // // // // // // // // //     .select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const fetchDisponibiliteEtudiant = async (etudiant_id, date) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('disponibilite_binaire_etudiant')
-// // // // // // // // // // //     .select('*')
-// // // // // // // // // // //     .match({ etudiant_id, date })
-// // // // // // // // // // //     .maybeSingle();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data || { etudiant_id, date, ...emptySlots() };
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const saveDisponibiliteEtudiant = async (etudiant_id, date, slots) => {
-// // // // // // // // // // //   const slotPayload = normalizeSlots(slots);
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('disponibilite_binaire_etudiant')
-// // // // // // // // // // //     .upsert({ etudiant_id, date, ...slotPayload }, { onConflict: 'etudiant_id,date' })
-// // // // // // // // // // //     .select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Rendez-vous =====
-// // // // // // // // // // // export const fetchRendezVous = async (date = null) => {
-// // // // // // // // // // //   let query = supabase
-// // // // // // // // // // //     .from('rendez_vous')
-// // // // // // // // // // //     .select(
-// // // // // // // // // // //       `
-// // // // // // // // // // //       id, date, heure, heure_fin, chef_de_projet_id, etudiant_id,
-// // // // // // // // // // //       chefs_de_projet ( id, nom ),
-// // // // // // // // // // //       etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path )
-// // // // // // // // // // //     `
-// // // // // // // // // // //     )
-// // // // // // // // // // //     .order('heure', { ascending: true });
-
-// // // // // // // // // // //   if (date) query = query.eq('date', date);
-
-// // // // // // // // // // //   const { data, error } = await query;
-// // // // // // // // // // //   if (error) throw error;
-
-// // // // // // // // // // //   return data.map((r) => ({
-// // // // // // // // // // //     id: r.id,
-// // // // // // // // // // //     date: r.date,
-// // // // // // // // // // //     heure_debut: r.heure?.slice(0, 5) || '',
-// // // // // // // // // // //     heure_fin: r.heure_fin?.slice(0, 5) || '',
-// // // // // // // // // // //     chef_de_projet_id: r.chef_de_projet_id,
-// // // // // // // // // // //     etudiant_id: r.etudiant_id || r.etudiants?.id,
-// // // // // // // // // // //     chef_de_projet: r.chefs_de_projet?.nom,
-// // // // // // // // // // //     etudiant: `${r.etudiants?.nom || ''} ${r.etudiants?.prenom || ''}`.trim(),
-// // // // // // // // // // //     email_etudiant: r.etudiants?.adresse_email,
-// // // // // // // // // // //     cv_path: r.etudiants?.cv_path,
-// // // // // // // // // // //     lm_path: r.etudiants?.lm_path,
-// // // // // // // // // // //   }));
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const genererRendezVous = async (dateDebut, dateFin, token) => {
-// // // // // // // // // // //   const response = await fetch(`${supabaseUrl}/functions/v1/generer-rendez-vous`, {
-// // // // // // // // // // //     method: 'POST',
-// // // // // // // // // // //     headers: {
-// // // // // // // // // // //       'Content-Type': 'application/json',
-// // // // // // // // // // //       Authorization: `Bearer ${token}`,
-// // // // // // // // // // //     },
-// // // // // // // // // // //     body: JSON.stringify({ date_debut: dateDebut, date_fin: dateFin }),
-// // // // // // // // // // //   });
-
-// // // // // // // // // // //   if (!response.ok) {
-// // // // // // // // // // //     const err = await response.json().catch(() => ({}));
-// // // // // // // // // // //     throw new Error(err.error || `Erreur serveur: ${response.status}`);
-// // // // // // // // // // //   }
-// // // // // // // // // // //   return await response.json();
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Évaluations =====
-// // // // // // // // // // // export const fetchEvaluations = async () => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('evaluations').select(`
-// // // // // // // // // // //     id, note, commentaire, chef_de_projet_id, etudiant_id,
-// // // // // // // // // // //     etudiants ( nom, prenom, adresse_email ),
-// // // // // // // // // // //     chefs_de_projet ( nom )
-// // // // // // // // // // //   `);
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const saveEvaluation = async (chef_de_projet_id, etudiant_id, note, commentaire = '') => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('evaluations')
-// // // // // // // // // // //     .upsert(
-// // // // // // // // // // //       { chef_de_projet_id, etudiant_id, note, commentaire },
-// // // // // // // // // // //       { onConflict: 'chef_de_projet_id,etudiant_id' }
-// // // // // // // // // // //     )
-// // // // // // // // // // //     .select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Affectations finales =====
-// // // // // // // // // // // export const fetchAffectations = async () => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('affectation').select(`
-// // // // // // // // // // //     id, chef_de_projet_id, etudiant_id,
-// // // // // // // // // // //     etudiants ( id, nom, prenom, adresse_email, parcours ),
-// // // // // // // // // // //     chefs_de_projet ( id, nom, specialite, email )
-// // // // // // // // // // //   `);
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const saveAffectation = async (chef_de_projet_id, etudiant_id) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('affectation')
-// // // // // // // // // // //     .upsert({ chef_de_projet_id, etudiant_id }, { onConflict: 'etudiant_id' })
-// // // // // // // // // // //     .select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const deleteAffectation = async (etudiant_id) => {
-// // // // // // // // // // //   const { data, error } = await supabase
-// // // // // // // // // // //     .from('affectation')
-// // // // // // // // // // //     .delete()
-// // // // // // // // // // //     .eq('etudiant_id', etudiant_id);
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // // ===== Imports en Masse =====
-// // // // // // // // // // // export const importChefsDeProjet = async (rows) => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('chefs_de_projet').upsert(rows, { onConflict: 'email' }).select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const importEtudiants = async (rows) => {
-// // // // // // // // // // //   const { data, error } = await supabase.from('etudiants').upsert(rows, { onConflict: 'adresse_email' }).select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const importAptitudes = async (rows) => {
-// // // // // // // // // // //   const etudiants = await fetchEtudiants();
-// // // // // // // // // // //   const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
-
-// // // // // // // // // // //   const payload = rows
-// // // // // // // // // // //     .map((r) => {
-// // // // // // // // // // //       const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
-// // // // // // // // // // //       if (!etudiant_id) return null;
-// // // // // // // // // // //       const { adresse_email, ...rest } = r;
-// // // // // // // // // // //       return { etudiant_id, ...rest };
-// // // // // // // // // // //     })
-// // // // // // // // // // //     .filter(Boolean);
-
-// // // // // // // // // // //   const { data, error } = await supabase.from('aptitudes').upsert(payload, { onConflict: 'etudiant_id' }).select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
-// // // // // // // // // // // export const importApetences = async (rows) => {
-// // // // // // // // // // //   const etudiants = await fetchEtudiants();
-// // // // // // // // // // //   const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
-
-// // // // // // // // // // //   const payload = rows
-// // // // // // // // // // //     .map((r) => {
-// // // // // // // // // // //       const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
-// // // // // // // // // // //       if (!etudiant_id) return null;
-// // // // // // // // // // //       const { adresse_email, ...rest } = r;
-// // // // // // // // // // //       return { etudiant_id, ...rest };
-// // // // // // // // // // //     })
-// // // // // // // // // // //     .filter(Boolean);
-
-// // // // // // // // // // //   const { data, error } = await supabase.from('apetences').upsert(payload, { onConflict: 'etudiant_id' }).select();
-// // // // // // // // // // //   if (error) throw error;
-// // // // // // // // // // //   return data;
-// // // // // // // // // // // };
-
 // // // // // // // // // // import { createClient } from '@supabase/supabase-js';
 
 // // // // // // // // // // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -416,7 +38,6 @@
 // // // // // // // // // // };
 
 // // // // // // // // // // // Calcul du classement des chefs pour un étudiant basé sur ses appétences
-// // // // // // // // // // // (version client, utilisée pour toute la page — pas d'appel réseau)
 // // // // // // // // // // export const computeChefRanksForStudent = (etudiantAppetences, chefsList) => {
 // // // // // // // // // //   if (!etudiantAppetences || !chefsList) return new Map();
 
@@ -446,33 +67,6 @@
 // // // // // // // // // //   });
 
 // // // // // // // // // //   return rankMap;
-// // // // // // // // // // };
-
-// // // // // // // // // // // Classement thématique des chefs de projet pour UN étudiant, recalculé
-// // // // // // // // // // // directement depuis la base (utile pour un recalcul ponctuel côté serveur,
-// // // // // // // // // // // hors du chargement global de la page qui utilise computeChefRanksForStudent).
-// // // // // // // // // // // Retourne : [{ chef_id, chef_nom, specialite, niveau_appetence, rang }, ...]
-// // // // // // // // // // export const getClassementThematiques = async (etudiant_id) => {
-// // // // // // // // // //   const [{ data: appetence, error: apErr }, { data: chefsList, error: chefErr }] = await Promise.all([
-// // // // // // // // // //     supabase.from('apetences').select('*').eq('etudiant_id', etudiant_id).maybeSingle(),
-// // // // // // // // // //     supabase.from('chefs_de_projet').select('id, nom, specialite'),
-// // // // // // // // // //   ]);
-// // // // // // // // // //   if (apErr) throw apErr;
-// // // // // // // // // //   if (chefErr) throw chefErr;
-
-// // // // // // // // // //   const scored = (chefsList || []).map((chef) => ({
-// // // // // // // // // //     chef_id: chef.id,
-// // // // // // // // // //     chef_nom: chef.nom,
-// // // // // // // // // //     specialite: chef.specialite,
-// // // // // // // // // //     niveau_appetence: Number(appetence?.[normalizeSpecialiteKey(chef.specialite)] ?? 0),
-// // // // // // // // // //   }));
-
-// // // // // // // // // //   scored.sort((a, b) => {
-// // // // // // // // // //     if (b.niveau_appetence !== a.niveau_appetence) return b.niveau_appetence - a.niveau_appetence;
-// // // // // // // // // //     return (a.chef_nom || '').localeCompare(b.chef_nom || '', 'fr', { sensitivity: 'base' });
-// // // // // // // // // //   });
-
-// // // // // // // // // //   return scored.map((s, index) => ({ ...s, rang: index + 1 }));
 // // // // // // // // // // };
 
 // // // // // // // // // // // ===== Documents (CV & Lettres de motivation) =====
@@ -555,10 +149,10 @@
 // // // // // // // // // //   return data || [];
 // // // // // // // // // // };
 
-// // // // // // // // // // // ===== Sélections / Vœux =====
+// // // // // // // // // // // ===== Sélections / Vœux (Sans priorité en base) =====
 // // // // // // // // // // export const fetchSelections = async () => {
 // // // // // // // // // //   const { data, error } = await supabase.from('selections').select(`
-// // // // // // // // // //     id, etudiant_id, chef_de_projet_id, priorite,
+// // // // // // // // // //     id, etudiant_id, chef_de_projet_id,
 // // // // // // // // // //     etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path ),
 // // // // // // // // // //     chefs_de_projet ( id, nom, specialite, email )
 // // // // // // // // // //   `);
@@ -569,16 +163,13 @@
 // // // // // // // // // //     chefDeProjet: s.chefs_de_projet?.nom,
 // // // // // // // // // //     etudiant_id: s.etudiant_id,
 // // // // // // // // // //     chef_de_projet_id: s.chef_de_projet_id,
-// // // // // // // // // //     priorite: s.priorite,
 // // // // // // // // // //   }));
 // // // // // // // // // // };
 
-// // // // // // // // // // // priorite est optionnelle (défaut 1) pour rester compatible avec tous les
-// // // // // // // // // // // appels existants qui ne la passaient pas encore (toggleSelection manuel).
-// // // // // // // // // // export const saveSelection = async (etudiant_id, chef_de_projet_id, priorite = 1) => {
+// // // // // // // // // // export const saveSelection = async (etudiant_id, chef_de_projet_id) => {
 // // // // // // // // // //   const { data, error } = await supabase
 // // // // // // // // // //     .from('selections')
-// // // // // // // // // //     .upsert({ etudiant_id, chef_de_projet_id, priorite }, { onConflict: 'etudiant_id,chef_de_projet_id' })
+// // // // // // // // // //     .upsert({ etudiant_id, chef_de_projet_id }, { onConflict: 'etudiant_id,chef_de_projet_id' })
 // // // // // // // // // //     .select();
 // // // // // // // // // //   if (error) throw error;
 // // // // // // // // // //   return data;
@@ -785,7 +376,6 @@
 // // // // // // // // // //   return data;
 // // // // // // // // // // };
 
-
 // // // // // // // // // import { createClient } from '@supabase/supabase-js';
 
 // // // // // // // // // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -826,6 +416,7 @@
 // // // // // // // // // };
 
 // // // // // // // // // // Calcul du classement des chefs pour un étudiant basé sur ses appétences
+// // // // // // // // // // (version client, utilisée pour toute la page — pas d'appel réseau)
 // // // // // // // // // export const computeChefRanksForStudent = (etudiantAppetences, chefsList) => {
 // // // // // // // // //   if (!etudiantAppetences || !chefsList) return new Map();
 
@@ -857,7 +448,10 @@
 // // // // // // // // //   return rankMap;
 // // // // // // // // // };
 
-// // // // // // // // // // Classement thématique des chefs de projet pour UN étudiant
+// // // // // // // // // // Classement thématique des chefs de projet pour UN étudiant, recalculé
+// // // // // // // // // // directement depuis la base (utile pour un recalcul ponctuel côté serveur,
+// // // // // // // // // // hors du chargement global de la page qui utilise computeChefRanksForStudent).
+// // // // // // // // // // Retourne : [{ chef_id, chef_nom, specialite, niveau_appetence, rang }, ...]
 // // // // // // // // // export const getClassementThematiques = async (etudiant_id) => {
 // // // // // // // // //   const [{ data: appetence, error: apErr }, { data: chefsList, error: chefErr }] = await Promise.all([
 // // // // // // // // //     supabase.from('apetences').select('*').eq('etudiant_id', etudiant_id).maybeSingle(),
@@ -964,7 +558,7 @@
 // // // // // // // // // // ===== Sélections / Vœux =====
 // // // // // // // // // export const fetchSelections = async () => {
 // // // // // // // // //   const { data, error } = await supabase.from('selections').select(`
-// // // // // // // // //     id, etudiant_id, chef_de_projet_id,
+// // // // // // // // //     id, etudiant_id, chef_de_projet_id, priorite,
 // // // // // // // // //     etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path ),
 // // // // // // // // //     chefs_de_projet ( id, nom, specialite, email )
 // // // // // // // // //   `);
@@ -975,13 +569,16 @@
 // // // // // // // // //     chefDeProjet: s.chefs_de_projet?.nom,
 // // // // // // // // //     etudiant_id: s.etudiant_id,
 // // // // // // // // //     chef_de_projet_id: s.chef_de_projet_id,
+// // // // // // // // //     priorite: s.priorite,
 // // // // // // // // //   }));
 // // // // // // // // // };
 
-// // // // // // // // // export const saveSelection = async (etudiant_id, chef_de_projet_id) => {
+// // // // // // // // // // priorite est optionnelle (défaut 1) pour rester compatible avec tous les
+// // // // // // // // // // appels existants qui ne la passaient pas encore (toggleSelection manuel).
+// // // // // // // // // export const saveSelection = async (etudiant_id, chef_de_projet_id, priorite = 1) => {
 // // // // // // // // //   const { data, error } = await supabase
 // // // // // // // // //     .from('selections')
-// // // // // // // // //     .upsert({ etudiant_id, chef_de_projet_id }, { onConflict: 'etudiant_id,chef_de_projet_id' })
+// // // // // // // // //     .upsert({ etudiant_id, chef_de_projet_id, priorite }, { onConflict: 'etudiant_id,chef_de_projet_id' })
 // // // // // // // // //     .select();
 // // // // // // // // //   if (error) throw error;
 // // // // // // // // //   return data;
@@ -1188,80 +785,6 @@
 // // // // // // // // //   return data;
 // // // // // // // // // };
 
-// // // // // // // // // // ===== FONCTIONS DE REMISE À ZÉRO CIBLÉES (Admin) =====
-
-// // // // // // // // // // 1. Vider toutes les sélections
-// // // // // // // // // export const resetAllSelections = async () => {
-// // // // // // // // //   const { error } = await supabase.from('selections').delete().neq('id', 0);
-// // // // // // // // //   if (error) throw error;
-// // // // // // // // // };
-
-// // // // // // // // // // 2. Vider les rendez-vous
-// // // // // // // // // export const resetAllRendezVous = async (dateDebut = null, dateFin = null) => {
-// // // // // // // // //   let query = supabase.from('rendez_vous').delete();
-// // // // // // // // //   if (dateDebut && dateFin) {
-// // // // // // // // //     query = query.gte('date', dateDebut).lte('date', dateFin);
-// // // // // // // // //   } else {
-// // // // // // // // //     query = query.neq('id', 0);
-// // // // // // // // //   }
-// // // // // // // // //   const { error } = await query;
-// // // // // // // // //   if (error) throw error;
-// // // // // // // // // };
-
-// // // // // // // // // // 3. Vider les évaluations
-// // // // // // // // // export const resetAllEvaluations = async () => {
-// // // // // // // // //   const { error } = await supabase.from('evaluations').delete().neq('id', 0);
-// // // // // // // // //   if (error) throw error;
-// // // // // // // // // };
-
-// // // // // // // // // // 4. Vider les affectations finales
-// // // // // // // // // export const resetAllAffectations = async () => {
-// // // // // // // // //   const { error } = await supabase.from('affectation').delete().neq('id', 0);
-// // // // // // // // //   if (error) throw error;
-// // // // // // // // // };
-
-// // // // // // // // // // 5. Vider les disponibilités
-// // // // // // // // // export const resetAllDisponibilites = async (cible = 'all', date = null) => {
-// // // // // // // // //   if (cible === 'chefs' || cible === 'all') {
-// // // // // // // // //     let q = supabase.from('disponibilite_binaire_chefprojet').delete();
-// // // // // // // // //     if (date) q = q.eq('date', date);
-// // // // // // // // //     else q = q.neq('id', 0);
-// // // // // // // // //     const { error } = await q;
-// // // // // // // // //     if (error) throw error;
-// // // // // // // // //   }
-// // // // // // // // //   if (cible === 'etudiants' || cible === 'all') {
-// // // // // // // // //     let q = supabase.from('disponibilite_binaire_etudiant').delete();
-// // // // // // // // //     if (date) q = q.eq('date', date);
-// // // // // // // // //     else q = q.neq('id', 0);
-// // // // // // // // //     const { error } = await q;
-// // // // // // // // //     if (error) throw error;
-// // // // // // // // //   }
-// // // // // // // // // };
-
-// // // // // // // // // // 6. Purger un document unitaire (CV ou LM)
-// // // // // // // // // export const deleteSingleDocument = async (etudiant_id, type = 'cv') => {
-// // // // // // // // //   const filePath = `${type}/${etudiant_id}.pdf`;
-// // // // // // // // //   await supabase.storage.from('documents').remove([filePath]);
-// // // // // // // // //   const updatePayload = type === 'cv' ? { cv_path: null } : { lm_path: null };
-// // // // // // // // //   const { error } = await supabase.from('etudiants').update(updatePayload).eq('id', etudiant_id);
-// // // // // // // // //   if (error) throw error;
-// // // // // // // // // };
-
-// // // // // // // // // // 7. Purger TOUS les documents (CV et LM) du Storage et de la base
-// // // // // // // // // export const purgeAllDocuments = async () => {
-// // // // // // // // //   const { data: cvFiles } = await supabase.storage.from('documents').list('cv');
-// // // // // // // // //   if (cvFiles && cvFiles.length > 0) {
-// // // // // // // // //     await supabase.storage.from('documents').remove(cvFiles.map((f) => `cv/${f.name}`));
-// // // // // // // // //   }
-
-// // // // // // // // //   const { data: lmFiles } = await supabase.storage.from('documents').list('lm');
-// // // // // // // // //   if (lmFiles && lmFiles.length > 0) {
-// // // // // // // // //     await supabase.storage.from('documents').remove(lmFiles.map((f) => `lm/${f.name}`));
-// // // // // // // // //   }
-
-// // // // // // // // //   const { error } = await supabase.from('etudiants').update({ cv_path: null, lm_path: null }).neq('id', 0);
-// // // // // // // // //   if (error) throw error;
-// // // // // // // // // };
 
 // // // // // // // // import { createClient } from '@supabase/supabase-js';
 
@@ -1740,61 +1263,6 @@
 // // // // // // // //   if (error) throw error;
 // // // // // // // // };
 
-// // // // // // // // // 8. Remise à zéro TOTALE (Base de données + Storage Cloud)
-// // // // // // // // export const resetEntireDatabaseAndStorage = async () => {
-// // // // // // // //   try {
-// // // // // // // //     await purgeAllDocuments();
-// // // // // // // //   } catch (err) {
-// // // // // // // //     console.warn('Storage déjà vide ou erreur purge:', err);
-// // // // // // // //   }
-
-// // // // // // // //   const { data, error } = await supabase.rpc('reset_all_campaign_data');
-// // // // // // // //   if (error) {
-// // // // // // // //     // Fallback via reset_selective_data si la procédure n'a pas été nommée à l'identique
-// // // // // // // //     const { error: fallbackErr } = await supabase.rpc('reset_selective_data', {
-// // // // // // // //       options: {
-// // // // // // // //         rendez_vous: true,
-// // // // // // // //         evaluations: true,
-// // // // // // // //         affectations: true,
-// // // // // // // //         selections: true,
-// // // // // // // //         disponibilites: true,
-// // // // // // // //         competences: true,
-// // // // // // // //         etudiants: true,
-// // // // // // // //         chefs: true,
-// // // // // // // //         users: true,
-// // // // // // // //       },
-// // // // // // // //     });
-// // // // // // // //     if (fallbackErr) throw fallbackErr;
-// // // // // // // //   }
-// // // // // // // //   return data;
-// // // // // // // // };
-
-// // // // // // // // // 9. Nettoyage complet des données client (Cookies, localStorage, sessionStorage, caches)
-// // // // // // // // export const clearClientStorageAndCookies = () => {
-// // // // // // // //   try {
-// // // // // // // //     localStorage.clear();
-// // // // // // // //     sessionStorage.clear();
-
-// // // // // // // //     const cookies = document.cookie.split(';');
-// // // // // // // //     for (let i = 0; i < cookies.length; i++) {
-// // // // // // // //       const cookie = cookies[i];
-// // // // // // // //       const eqPos = cookie.indexOf('=');
-// // // // // // // //       const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-// // // // // // // //       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-// // // // // // // //       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
-// // // // // // // //     }
-
-// // // // // // // //     if (window.caches) {
-// // // // // // // //       caches.keys().then((names) => {
-// // // // // // // //         for (const name of names) caches.delete(name);
-// // // // // // // //       });
-// // // // // // // //     }
-// // // // // // // //   } catch (err) {
-// // // // // // // //     console.warn('Erreur nettoyage client:', err);
-// // // // // // // //   }
-// // // // // // // // };
-
-
 // // // // // // // import { createClient } from '@supabase/supabase-js';
 
 // // // // // // // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -1918,78 +1386,6 @@
 // // // // // // //   if (dbErr) throw dbErr;
 
 // // // // // // //   return storagePath;
-// // // // // // // };
-
-// // // // // // // // Normalisation de texte pour la détection intelligente des étudiants (PDF)
-// // // // // // // export const cleanTextForMatching = (str) => {
-// // // // // // //   return (str || '')
-// // // // // // //     .normalize('NFD')
-// // // // // // //     .replace(/[\u0300-\u036f]/g, '')
-// // // // // // //     .toLowerCase()
-// // // // // // //     .replace(/(\.pdf|_cv|_lm|cv|lm)/gi, '')
-// // // // // // //     .replace(/[^a-z0-9]/g, '');
-// // // // // // // };
-
-// // // // // // // // Retrouver l'étudiant correspondant au nom d'un fichier ou d'un dossier
-// // // // // // // export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
-// // // // // // //   if (!filePathOrName || !etudiantsList || etudiantsList.length === 0) return null;
-
-// // // // // // //   // 1. Détection si le nom est directement l'ID (ex: "42.pdf")
-// // // // // // //   const idMatch = filePathOrName.match(/^(\d+)(\.pdf)?$/i);
-// // // // // // //   if (idMatch) {
-// // // // // // //     const id = parseInt(idMatch[1], 10);
-// // // // // // //     const foundById = etudiantsList.find((e) => e.id === id);
-// // // // // // //     if (foundById) return foundById;
-// // // // // // //   }
-
-// // // // // // //   // 2. Détection par email
-// // // // // // //   const cleanEmailTarget = filePathOrName.toLowerCase().trim();
-// // // // // // //   const foundByEmail = etudiantsList.find((e) =>
-// // // // // // //     e.adresse_email && cleanEmailTarget.includes(e.adresse_email.toLowerCase())
-// // // // // // //   );
-// // // // // // //   if (foundByEmail) return foundByEmail;
-
-// // // // // // //   // 3. Détection par Nom / Prénom / Sous-dossier
-// // // // // // //   const cleanedTarget = cleanTextForMatching(filePathOrName);
-// // // // // // //   if (!cleanedTarget) return null;
-
-// // // // // // //   return etudiantsList.find((e) => {
-// // // // // // //     const nom = cleanTextForMatching(e.nom);
-// // // // // // //     const prenom = cleanTextForMatching(e.prenom);
-// // // // // // //     const nomPrenom = `${nom}${prenom}`;
-// // // // // // //     const prenomNom = `${prenom}${nom}`;
-// // // // // // //     const emailPrefix = cleanTextForMatching(e.adresse_email.split('@')[0]);
-
-// // // // // // //     return (
-// // // // // // //       (nom && prenom && (cleanedTarget.includes(nomPrenom) || cleanedTarget.includes(prenomNom))) ||
-// // // // // // //       (nomPrenom && nomPrenom.includes(cleanedTarget)) ||
-// // // // // // //       (prenomNom && prenomNom.includes(cleanedTarget)) ||
-// // // // // // //       (emailPrefix && (cleanedTarget.includes(emailPrefix) || emailPrefix.includes(cleanedTarget)))
-// // // // // // //     );
-// // // // // // //   }) || null;
-// // // // // // // };
-
-// // // // // // // // Téléversement par lot de documents avec barre de progression
-// // // // // // // export const uploadBatchDocuments = async (items, type = 'cv', onProgress = null) => {
-// // // // // // //   if (!items || items.length === 0) return { success: 0, errors: [] };
-
-// // // // // // //   let successCount = 0;
-// // // // // // //   const errors = [];
-
-// // // // // // //   for (let i = 0; i < items.length; i++) {
-// // // // // // //     const { file, etudiant_id } = items[i];
-// // // // // // //     try {
-// // // // // // //       await uploadDocument(etudiant_id, file, type);
-// // // // // // //       successCount++;
-// // // // // // //     } catch (err) {
-// // // // // // //       errors.push({ file: file.name, error: err.message });
-// // // // // // //     }
-// // // // // // //     if (onProgress) {
-// // // // // // //       onProgress(i + 1, items.length);
-// // // // // // //     }
-// // // // // // //   }
-
-// // // // // // //   return { success: successCount, total: items.length, errors };
 // // // // // // // };
 
 // // // // // // // // ===== Chefs de projet =====
@@ -2271,11 +1667,13 @@
 
 // // // // // // // // ===== FONCTIONS DE REMISE À ZÉRO CIBLÉES (Admin) =====
 
+// // // // // // // // 1. Vider toutes les sélections
 // // // // // // // export const resetAllSelections = async () => {
 // // // // // // //   const { error } = await supabase.from('selections').delete().neq('id', 0);
 // // // // // // //   if (error) throw error;
 // // // // // // // };
 
+// // // // // // // // 2. Vider les rendez-vous
 // // // // // // // export const resetAllRendezVous = async (dateDebut = null, dateFin = null) => {
 // // // // // // //   let query = supabase.from('rendez_vous').delete();
 // // // // // // //   if (dateDebut && dateFin) {
@@ -2287,16 +1685,19 @@
 // // // // // // //   if (error) throw error;
 // // // // // // // };
 
+// // // // // // // // 3. Vider les évaluations
 // // // // // // // export const resetAllEvaluations = async () => {
 // // // // // // //   const { error } = await supabase.from('evaluations').delete().neq('id', 0);
 // // // // // // //   if (error) throw error;
 // // // // // // // };
 
+// // // // // // // // 4. Vider les affectations finales
 // // // // // // // export const resetAllAffectations = async () => {
 // // // // // // //   const { error } = await supabase.from('affectation').delete().neq('id', 0);
 // // // // // // //   if (error) throw error;
 // // // // // // // };
 
+// // // // // // // // 5. Vider les disponibilités
 // // // // // // // export const resetAllDisponibilites = async (cible = 'all', date = null) => {
 // // // // // // //   if (cible === 'chefs' || cible === 'all') {
 // // // // // // //     let q = supabase.from('disponibilite_binaire_chefprojet').delete();
@@ -2314,6 +1715,7 @@
 // // // // // // //   }
 // // // // // // // };
 
+// // // // // // // // 6. Purger un document unitaire (CV ou LM)
 // // // // // // // export const deleteSingleDocument = async (etudiant_id, type = 'cv') => {
 // // // // // // //   const filePath = `${type}/${etudiant_id}.pdf`;
 // // // // // // //   await supabase.storage.from('documents').remove([filePath]);
@@ -2322,6 +1724,7 @@
 // // // // // // //   if (error) throw error;
 // // // // // // // };
 
+// // // // // // // // 7. Purger TOUS les documents (CV et LM) du Storage et de la base
 // // // // // // // export const purgeAllDocuments = async () => {
 // // // // // // //   const { data: cvFiles } = await supabase.storage.from('documents').list('cv');
 // // // // // // //   if (cvFiles && cvFiles.length > 0) {
@@ -2337,6 +1740,7 @@
 // // // // // // //   if (error) throw error;
 // // // // // // // };
 
+// // // // // // // // 8. Remise à zéro TOTALE (Base de données + Storage Cloud)
 // // // // // // // export const resetEntireDatabaseAndStorage = async () => {
 // // // // // // //   try {
 // // // // // // //     await purgeAllDocuments();
@@ -2346,6 +1750,7 @@
 
 // // // // // // //   const { data, error } = await supabase.rpc('reset_all_campaign_data');
 // // // // // // //   if (error) {
+// // // // // // //     // Fallback via reset_selective_data si la procédure n'a pas été nommée à l'identique
 // // // // // // //     const { error: fallbackErr } = await supabase.rpc('reset_selective_data', {
 // // // // // // //       options: {
 // // // // // // //         rendez_vous: true,
@@ -2364,6 +1769,7 @@
 // // // // // // //   return data;
 // // // // // // // };
 
+// // // // // // // // 9. Nettoyage complet des données client (Cookies, localStorage, sessionStorage, caches)
 // // // // // // // export const clearClientStorageAndCookies = () => {
 // // // // // // //   try {
 // // // // // // //     localStorage.clear();
@@ -2514,7 +1920,7 @@
 // // // // // //   return storagePath;
 // // // // // // };
 
-// // // // // // // Normalisation de texte pour la détection intelligente des étudiants
+// // // // // // // Normalisation de texte pour la détection intelligente des étudiants (PDF)
 // // // // // // export const cleanTextForMatching = (str) => {
 // // // // // //   return (str || '')
 // // // // // //     .normalize('NFD')
@@ -2524,35 +1930,35 @@
 // // // // // //     .replace(/[^a-z0-9]/g, '');
 // // // // // // };
 
-// // // // // // // Retrouver l'étudiant correspondant au nom d'un sous-dossier ou d'un fichier
+// // // // // // // Retrouver l'étudiant correspondant au nom d'un fichier ou d'un dossier
 // // // // // // export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
 // // // // // //   if (!filePathOrName || !etudiantsList || etudiantsList.length === 0) return null;
 
-// // // // // //   // 1. PRIORITÉ ABSOLUE AU NOM DU SOUS-DOSSIER PARENT (ex: "Tout_CV/Albert COUPEY/COUPEY_Albert_CV")
-// // // // // //   let target = filePathOrName;
-// // // // // //   if (filePathOrName.includes('/')) {
-// // // // // //     const parts = filePathOrName.split('/').filter(Boolean);
-// // // // // //     if (parts.length >= 2) {
-// // // // // //       target = parts[parts.length - 2];
-// // // // // //     }
-// // // // // //   } else if (filePathOrName.includes('\\')) {
-// // // // // //     const parts = filePathOrName.split('\\').filter(Boolean);
-// // // // // //     if (parts.length >= 2) {
-// // // // // //       target = parts[parts.length - 2];
-// // // // // //     }
+// // // // // //   // 1. Détection si le nom est directement l'ID (ex: "42.pdf")
+// // // // // //   const idMatch = filePathOrName.match(/^(\d+)(\.pdf)?$/i);
+// // // // // //   if (idMatch) {
+// // // // // //     const id = parseInt(idMatch[1], 10);
+// // // // // //     const foundById = etudiantsList.find((e) => e.id === id);
+// // // // // //     if (foundById) return foundById;
 // // // // // //   }
 
-// // // // // //   // 2. Nettoyage de la chaîne
-// // // // // //   const cleanedTarget = cleanTextForMatching(target);
+// // // // // //   // 2. Détection par email
+// // // // // //   const cleanEmailTarget = filePathOrName.toLowerCase().trim();
+// // // // // //   const foundByEmail = etudiantsList.find((e) =>
+// // // // // //     e.adresse_email && cleanEmailTarget.includes(e.adresse_email.toLowerCase())
+// // // // // //   );
+// // // // // //   if (foundByEmail) return foundByEmail;
+
+// // // // // //   // 3. Détection par Nom / Prénom / Sous-dossier
+// // // // // //   const cleanedTarget = cleanTextForMatching(filePathOrName);
 // // // // // //   if (!cleanedTarget) return null;
 
-// // // // // //   // 3. Correspondance intelligente avec les étudiants en base
 // // // // // //   return etudiantsList.find((e) => {
 // // // // // //     const nom = cleanTextForMatching(e.nom);
 // // // // // //     const prenom = cleanTextForMatching(e.prenom);
 // // // // // //     const nomPrenom = `${nom}${prenom}`;
 // // // // // //     const prenomNom = `${prenom}${nom}`;
-// // // // // //     const emailPrefix = cleanTextForMatching(e.adresse_email?.split('@')[0]);
+// // // // // //     const emailPrefix = cleanTextForMatching(e.adresse_email.split('@')[0]);
 
 // // // // // //     return (
 // // // // // //       (nom && prenom && (cleanedTarget.includes(nomPrenom) || cleanedTarget.includes(prenomNom))) ||
@@ -3004,112 +2410,10 @@
 // // // // //   return slots;
 // // // // // };
 
-// // // // // // ============================================================================
-// // // // // // RÉFÉRENTIEL DYNAMIQUE DES COMPÉTENCES (Paramétrable par Promotion)
-// // // // // // ============================================================================
-
-// // // // // export const DEFAULT_COMPETENCES = [
-// // // // //   { code: 'calculs_simulation_numerique', label: 'Calculs & Simulation', ordre: 1, actif: true },
-// // // // //   { code: 'essais_caracterisation', label: 'Essais & Caractérisation', ordre: 2, actif: true },
-// // // // //   { code: 'fabrication_prototypage', label: 'Fabrication & Proto', ordre: 3, actif: true },
-// // // // //   { code: 'conception_mecanique', label: 'Conception Méca', ordre: 4, actif: true },
-// // // // //   { code: 'automatique_automatisme', label: 'Automatique', ordre: 5, actif: true },
-// // // // //   { code: 'iot_systeme_embarque', label: 'IOT & Embarqué', ordre: 6, actif: true },
-// // // // //   { code: 'robot_cobot', label: 'Robot & Cobot', ordre: 7, actif: true },
-// // // // //   { code: 'vision', label: 'Vision Industrielle', ordre: 8, actif: true },
-// // // // //   { code: 'ia', label: 'Intelligence Artificielle', ordre: 9, actif: true },
-// // // // //   { code: 'ihm_appli_web_mobile', label: 'IHM & App Web/Mobile', ordre: 10, actif: true },
-// // // // //   { code: 'ethique_ergonomie', label: 'Éthique & Ergonomie', ordre: 11, actif: true },
-// // // // // ];
-
-// // // // // export const fetchReferentielCompetences = async (onlyActive = true) => {
-// // // // //   let query = supabase.from('referentiel_competences').select('*').order('ordre', { ascending: true });
-// // // // //   if (onlyActive) query = query.eq('actif', true);
-  
-// // // // //   const { data, error } = await query;
-// // // // //   if (error) throw error;
-  
-// // // // //   if (!data || data.length === 0) {
-// // // // //     return DEFAULT_COMPETENCES.map((c, idx) => ({ id: idx + 1, ...c }));
-// // // // //   }
-// // // // //   return data;
-// // // // // };
-
-// // // // // export const saveReferentielCompetence = async (competence) => {
-// // // // //   const payload = {
-// // // // //     code: competence.code.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'),
-// // // // //     label: competence.label.trim(),
-// // // // //     description: competence.description?.trim() || '',
-// // // // //     ordre: Number(competence.ordre || 1),
-// // // // //     actif: competence.actif !== undefined ? competence.actif : true,
-// // // // //   };
-// // // // //   if (competence.id) payload.id = competence.id;
-
-// // // // //   const { data, error } = await supabase
-// // // // //     .from('referentiel_competences')
-// // // // //     .upsert(payload, { onConflict: 'code' })
-// // // // //     .select();
-// // // // //   if (error) throw error;
-// // // // //   return data;
-// // // // // };
-
-// // // // // export const deleteReferentielCompetence = async (id) => {
-// // // // //   const { data, error } = await supabase
-// // // // //     .from('referentiel_competences')
-// // // // //     .delete()
-// // // // //     .eq('id', id);
-// // // // //   if (error) throw error;
-// // // // //   return data;
-// // // // // };
-
-// // // // // export const resetReferentielToDefaults = async () => {
-// // // // //   const { data, error } = await supabase
-// // // // //     .from('referentiel_competences')
-// // // // //     .upsert(DEFAULT_COMPETENCES, { onConflict: 'code' })
-// // // // //     .select();
-// // // // //   if (error) throw error;
-// // // // //   return data;
-// // // // // };
-
-// // // // // export const fetchDynamicScoresByEtudiant = async (etudiant_id) => {
-// // // // //   const { data, error } = await supabase
-// // // // //     .from('etudiant_competences')
-// // // // //     .select(`
-// // // // //       competence_id, score_aptitude, score_appetence,
-// // // // //       referentiel_competences ( id, code, label, ordre, actif )
-// // // // //     `)
-// // // // //     .eq('etudiant_id', etudiant_id);
-// // // // //   if (error) throw error;
-
-// // // // //   const scoresMap = {};
-// // // // //   (data || []).forEach((row) => {
-// // // // //     const comp = row.referentiel_competences;
-// // // // //     if (comp && comp.actif) {
-// // // // //       scoresMap[comp.code] = {
-// // // // //         aptitude: row.score_aptitude ?? 0,
-// // // // //         appetence: row.score_appetence ?? 0,
-// // // // //         label: comp.label,
-// // // // //         ordre: comp.ordre,
-// // // // //       };
-// // // // //     }
-// // // // //   });
-
-// // // // //   return scoresMap;
-// // // // // };
-
-// // // // // export const normalizeSpecialiteKey = (spec, customCompetences = null) => {
+// // // // // // Normalisation des thématiques / spécialités
+// // // // // export const normalizeSpecialiteKey = (spec) => {
 // // // // //   if (!spec) return '';
 // // // // //   const clean = spec.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-
-// // // // //   if (customCompetences && Array.isArray(customCompetences)) {
-// // // // //     const found = customCompetences.find((c) => {
-// // // // //       const cLabel = c.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-// // // // //       const cCode = c.code.toLowerCase();
-// // // // //       return clean.includes(cLabel) || clean.includes(cCode) || cLabel.includes(clean);
-// // // // //     });
-// // // // //     if (found) return found.code;
-// // // // //   }
-
 // // // // //   if (clean.includes('calcul') || clean.includes('simulation')) return 'calculs_simulation_numerique';
 // // // // //   if (clean.includes('essai') || clean.includes('caracterisation')) return 'essais_caracterisation';
 // // // // //   if (clean.includes('fab') || clean.includes('proto')) return 'fabrication_prototypage';
@@ -3124,13 +2428,13 @@
 // // // // //   return clean.replace(/[^a-z0-9_]/g, '_');
 // // // // // };
 
-// // // // // export const computeChefRanksForStudent = (etudiantAppetences, chefsList, referentielCompetences = null) => {
+// // // // // // Calcul du classement des chefs pour un étudiant basé sur ses appétences
+// // // // // export const computeChefRanksForStudent = (etudiantAppetences, chefsList) => {
 // // // // //   if (!etudiantAppetences || !chefsList) return new Map();
 
 // // // // //   const scoredChefs = chefsList.map((chef) => {
-// // // // //     const key = normalizeSpecialiteKey(chef.specialite, referentielCompetences);
-// // // // //     const rawVal = etudiantAppetences[key];
-// // // // //     const score = Number(typeof rawVal === 'object' && rawVal !== null ? (rawVal.appetence ?? 0) : (rawVal ?? 0));
+// // // // //     const key = normalizeSpecialiteKey(chef.specialite);
+// // // // //     const score = Number(etudiantAppetences[key] ?? 0);
 // // // // //     return {
 // // // // //       chef_id: chef.id,
 // // // // //       score,
@@ -3139,6 +2443,7 @@
 // // // // //     };
 // // // // //   });
 
+// // // // //   // Tri par appétence décroissante, puis par ordre alphabétique
 // // // // //   scoredChefs.sort((a, b) => {
 // // // // //     if (b.score !== a.score) return b.score - a.score;
 // // // // //     return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
@@ -3153,6 +2458,30 @@
 // // // // //   });
 
 // // // // //   return rankMap;
+// // // // // };
+
+// // // // // // Classement thématique des chefs de projet pour UN étudiant
+// // // // // export const getClassementThematiques = async (etudiant_id) => {
+// // // // //   const [{ data: appetence, error: apErr }, { data: chefsList, error: chefErr }] = await Promise.all([
+// // // // //     supabase.from('apetences').select('*').eq('etudiant_id', etudiant_id).maybeSingle(),
+// // // // //     supabase.from('chefs_de_projet').select('id, nom, specialite'),
+// // // // //   ]);
+// // // // //   if (apErr) throw apErr;
+// // // // //   if (chefErr) throw chefErr;
+
+// // // // //   const scored = (chefsList || []).map((chef) => ({
+// // // // //     chef_id: chef.id,
+// // // // //     chef_nom: chef.nom,
+// // // // //     specialite: chef.specialite,
+// // // // //     niveau_appetence: Number(appetence?.[normalizeSpecialiteKey(chef.specialite)] ?? 0),
+// // // // //   }));
+
+// // // // //   scored.sort((a, b) => {
+// // // // //     if (b.niveau_appetence !== a.niveau_appetence) return b.niveau_appetence - a.niveau_appetence;
+// // // // //     return (a.chef_nom || '').localeCompare(b.chef_nom || '', 'fr', { sensitivity: 'base' });
+// // // // //   });
+
+// // // // //   return scored.map((s, index) => ({ ...s, rang: index + 1 }));
 // // // // // };
 
 // // // // // // ===== Documents (CV & Lettres de motivation) =====
@@ -3185,6 +2514,7 @@
 // // // // //   return storagePath;
 // // // // // };
 
+// // // // // // Normalisation de texte pour la détection intelligente des étudiants
 // // // // // export const cleanTextForMatching = (str) => {
 // // // // //   return (str || '')
 // // // // //     .normalize('NFD')
@@ -3194,21 +2524,29 @@
 // // // // //     .replace(/[^a-z0-9]/g, '');
 // // // // // };
 
+// // // // // // Retrouver l'étudiant correspondant au nom d'un sous-dossier ou d'un fichier
 // // // // // export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
 // // // // //   if (!filePathOrName || !etudiantsList || etudiantsList.length === 0) return null;
 
+// // // // //   // 1. PRIORITÉ ABSOLUE AU NOM DU SOUS-DOSSIER PARENT (ex: "Tout_CV/Albert COUPEY/COUPEY_Albert_CV")
 // // // // //   let target = filePathOrName;
 // // // // //   if (filePathOrName.includes('/')) {
 // // // // //     const parts = filePathOrName.split('/').filter(Boolean);
-// // // // //     if (parts.length >= 2) target = parts[parts.length - 2];
+// // // // //     if (parts.length >= 2) {
+// // // // //       target = parts[parts.length - 2];
+// // // // //     }
 // // // // //   } else if (filePathOrName.includes('\\')) {
 // // // // //     const parts = filePathOrName.split('\\').filter(Boolean);
-// // // // //     if (parts.length >= 2) target = parts[parts.length - 2];
+// // // // //     if (parts.length >= 2) {
+// // // // //       target = parts[parts.length - 2];
+// // // // //     }
 // // // // //   }
 
+// // // // //   // 2. Nettoyage de la chaîne
 // // // // //   const cleanedTarget = cleanTextForMatching(target);
 // // // // //   if (!cleanedTarget) return null;
 
+// // // // //   // 3. Correspondance intelligente avec les étudiants en base
 // // // // //   return etudiantsList.find((e) => {
 // // // // //     const nom = cleanTextForMatching(e.nom);
 // // // // //     const prenom = cleanTextForMatching(e.prenom);
@@ -3225,6 +2563,7 @@
 // // // // //   }) || null;
 // // // // // };
 
+// // // // // // Téléversement par lot de documents avec barre de progression
 // // // // // export const uploadBatchDocuments = async (items, type = 'cv', onProgress = null) => {
 // // // // //   if (!items || items.length === 0) return { success: 0, errors: [] };
 
@@ -3643,6 +2982,7 @@
 // // // // //   }
 // // // // // };
 
+
 // // // // import { createClient } from '@supabase/supabase-js';
 
 // // // // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -3813,75 +3153,6 @@
 // // // //   });
 
 // // // //   return rankMap;
-// // // // };
-
-// // // // // ============================================================================
-// // // // // JAUGES ET QUOTAS DE NOTATION (Par Chef de Projet)
-// // // // // ============================================================================
-
-// // // // export const DEFAULT_GRADE_PERCENTAGES = {
-// // // //   pourcentage_a: 25.0,
-// // // //   pourcentage_b: 25.0,
-// // // //   pourcentage_c: 25.0,
-// // // //   pourcentage_d: 25.0,
-// // // // };
-
-// // // // // 1. Récupérer tous les quotas configurés des chefs
-// // // // export const fetchQuotasChefs = async () => {
-// // // //   const { data, error } = await supabase.from('quotas_evaluations_chef').select('*');
-// // // //   if (error) throw error;
-// // // //   return data || [];
-// // // // };
-
-// // // // // 2. Enregistrer ou mettre à jour les quotas d'un chef
-// // // // export const saveQuotaChef = async (chef_de_projet_id, percentages) => {
-// // // //   const payload = {
-// // // //     chef_de_projet_id: Number(chef_de_projet_id),
-// // // //     pourcentage_a: Number(percentages.pourcentage_a ?? 25),
-// // // //     pourcentage_b: Number(percentages.pourcentage_b ?? 25),
-// // // //     pourcentage_c: Number(percentages.pourcentage_c ?? 25),
-// // // //     pourcentage_d: Number(percentages.pourcentage_d ?? 25),
-// // // //   };
-
-// // // //   const { data, error } = await supabase
-// // // //     .from('quotas_evaluations_chef')
-// // // //     .upsert(payload, { onConflict: 'chef_de_projet_id' })
-// // // //     .select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // 3. Calculer les effectifs cibles (jauges) avec arrondi supérieur et ajustement sur C
-// // // // export const calculateChefGradeQuotas = (nbEtudiants, percentages = DEFAULT_GRADE_PERCENTAGES) => {
-// // // //   const total = Number(nbEtudiants) || 0;
-// // // //   if (total <= 0) {
-// // // //     return { maxA: 0, maxB: 0, maxC: 0, maxD: 0, total: 0 };
-// // // //   }
-
-// // // //   const pctA = Number(percentages.pourcentage_a ?? 25) / 100;
-// // // //   const pctB = Number(percentages.pourcentage_b ?? 25) / 100;
-// // // //   const pctD = Number(percentages.pourcentage_d ?? 25) / 100;
-
-// // // //   // Calcul au plus haut (arrondi standard/supérieur pour A, B, D)
-// // // //   let maxA = Math.round(total * pctA);
-// // // //   let maxB = Math.round(total * pctB);
-// // // //   let maxD = Math.round(total * pctD);
-
-// // // //   // Sécurité anti-dépassement global
-// // // //   if (maxA + maxB + maxD > total) {
-// // // //     maxD = Math.max(0, total - (maxA + maxB));
-// // // //   }
-
-// // // //   // La note C absorbe le solde restant pour que la somme fasse exactement 100% (total)
-// // // //   let maxC = Math.max(0, total - (maxA + maxB + maxD));
-
-// // // //   return {
-// // // //     maxA,
-// // // //     maxB,
-// // // //     maxC,
-// // // //     maxD,
-// // // //     total,
-// // // //   };
 // // // // };
 
 // // // // // ===== Documents (CV & Lettres de motivation) =====
@@ -4372,7 +3643,6 @@
 // // // //   }
 // // // // };
 
-
 // // // import { createClient } from '@supabase/supabase-js';
 
 // // // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -4556,12 +3826,14 @@
 // // //   pourcentage_d: 25.0,
 // // // };
 
+// // // // 1. Récupérer tous les quotas configurés des chefs
 // // // export const fetchQuotasChefs = async () => {
 // // //   const { data, error } = await supabase.from('quotas_evaluations_chef').select('*');
 // // //   if (error) throw error;
 // // //   return data || [];
 // // // };
 
+// // // // 2. Enregistrer ou mettre à jour les quotas d'un chef
 // // // export const saveQuotaChef = async (chef_de_projet_id, percentages) => {
 // // //   const payload = {
 // // //     chef_de_projet_id: Number(chef_de_projet_id),
@@ -4579,6 +3851,7 @@
 // // //   return data;
 // // // };
 
+// // // // 3. Calculer les effectifs cibles (jauges) avec arrondi supérieur et ajustement sur C
 // // // export const calculateChefGradeQuotas = (nbEtudiants, percentages = DEFAULT_GRADE_PERCENTAGES) => {
 // // //   const total = Number(nbEtudiants) || 0;
 // // //   if (total <= 0) {
@@ -4589,14 +3862,17 @@
 // // //   const pctB = Number(percentages.pourcentage_b ?? 25) / 100;
 // // //   const pctD = Number(percentages.pourcentage_d ?? 25) / 100;
 
+// // //   // Calcul au plus haut (arrondi standard/supérieur pour A, B, D)
 // // //   let maxA = Math.round(total * pctA);
 // // //   let maxB = Math.round(total * pctB);
 // // //   let maxD = Math.round(total * pctD);
 
+// // //   // Sécurité anti-dépassement global
 // // //   if (maxA + maxB + maxD > total) {
 // // //     maxD = Math.max(0, total - (maxA + maxB));
 // // //   }
 
+// // //   // La note C absorbe le solde restant pour que la somme fasse exactement 100% (total)
 // // //   let maxC = Math.max(0, total - (maxA + maxB + maxD));
 
 // // //   return {
@@ -4608,10 +3884,7 @@
 // // //   };
 // // // };
 
-// // // // ============================================================================
-// // // // DÉTECTION DES DOCUMENTS ET DES VŒUX MOODLE
-// // // // ============================================================================
-
+// // // // ===== Documents (CV & Lettres de motivation) =====
 // // // export const getDocumentPublicUrl = (path) => {
 // // //   if (!path) return null;
 // // //   const { data } = supabase.storage.from('documents').getPublicUrl(path);
@@ -4650,7 +3923,6 @@
 // // //     .replace(/[^a-z0-9]/g, '');
 // // // };
 
-// // // // Retrouver l'étudiant correspondant au nom d'un sous-dossier ou d'un fichier
 // // // export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
 // // //   if (!filePathOrName || !etudiantsList || etudiantsList.length === 0) return null;
 
@@ -4679,1076 +3951,6 @@
 // // //       (prenomNom && prenomNom.includes(cleanedTarget)) ||
 // // //       (emailPrefix && (cleanedTarget.includes(emailPrefix) || emailPrefix.includes(cleanedTarget)))
 // // //     );
-// // //   }) || null;
-// // // };
-
-// // // // Extraire le chef de projet depuis un texte de vœu Moodle (ex: "Conception... [M. BONNAL]")
-// // // // export const findChefFromWishText = (wishText, chefsList) => {
-// // // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
-
-// // // //   const raw = String(wishText).trim();
-
-// // // //   // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
-// // // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
-// // // //   const target = bracketMatch ? bracketMatch[1] : raw;
-
-// // // //   const cleanedTarget = cleanTextForMatching(target);
-// // // //   if (!cleanedTarget) return null;
-
-// // // //   // 2. Correspondance par nom de famille du chef
-// // // //   const found = chefsList.find((c) => {
-// // // //     const nomComplet = cleanTextForMatching(c.nom);
-// // // //     const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
-// // // //     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || ''); // ex: "bonnal", "guettari"
-
-// // // //     return (
-// // // //       (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
-// // // //       (nomDeFamille && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget)))
-// // // //     );
-// // // //   });
-
-// // // //   if (found) return found;
-
-// // // //   // 3. Fallback : correspondance par spécialité du projet
-// // // //   return chefsList.find((c) => {
-// // // //     const spec = cleanTextForMatching(c.specialite);
-// // // //     return spec && cleanTextForMatching(raw).includes(spec);
-// // // //   }) || null;
-// // // // };
-
-
-// // // // // Décodage HTML et nettoyage robuste pour Moodle
-// // // // export const decodeHtmlEntities = (str) => {
-// // // //   return (str || '')
-// // // //     .replace(/&#039;/g, "'")
-// // // //     .replace(/&amp;/g, '&')
-// // // //     .replace(/&quot;/g, '"')
-// // // //     .replace(/&lt;/g, '<')
-// // // //     .replace(/&gt;/g, '>');
-// // // // };
-
-// // // // export const findChefFromWishText = (wishText, chefsList) => {
-// // // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
-
-// // // //   const raw = decodeHtmlEntities(String(wishText)).trim();
-
-// // // //   // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
-// // // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
-// // // //   const target = bracketMatch ? bracketMatch[1] : raw;
-
-// // // //   const cleanedTarget = cleanTextForMatching(target);
-// // // //   if (!cleanedTarget) return null;
-
-// // // //   // 2. Correspondance par nom de famille du chef
-// // // //   const found = chefsList.find((c) => {
-// // // //     const nomComplet = cleanTextForMatching(c.nom);
-// // // //     const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
-// // // //     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || '');
-
-// // // //     return (
-// // // //       (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
-// // // //       (nomDeFamille && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget)))
-// // // //     );
-// // // //   });
-
-// // // //   if (found) return found;
-
-// // // //   // 3. Fallback : correspondance par spécialité
-// // // //   return chefsList.find((c) => {
-// // // //     const spec = cleanTextForMatching(c.specialite);
-// // // //     return spec && cleanTextForMatching(raw).includes(spec);
-// // // //   }) || null;
-// // // // };
-
-// // // // Décodage HTML et nettoyage robuste pour Moodle
-// // // // export const decodeHtmlEntities = (str) => {
-// // // //   return (str || '')
-// // // //     .replace(/&#039;/g, "'")
-// // // //     .replace(/&amp;/g, '&')
-// // // //     .replace(/&quot;/g, '"')
-// // // //     .replace(/&lt;/g, '<')
-// // // //     .replace(/&gt;/g, '>')
-// // // //     .replace(/Ã©/gi, 'e')
-// // // //     .replace(/Ã¨/gi, 'e')
-// // // //     .replace(/Ã/gi, 'a');
-// // // // };
-
-// // // // export const findChefFromWishText = (wishText, chefsList) => {
-// // // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
-
-// // // //   const raw = decodeHtmlEntities(String(wishText)).trim();
-
-// // // //   // 1. Détection du texte entre crochets [M. BONNAL], [O. QUENARD], [S. LOUIS]
-// // // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
-// // // //   const target = bracketMatch ? bracketMatch[1] : raw;
-
-// // // //   const cleanedTarget = cleanTextForMatching(
-// // // //     decodeHtmlEntities(target)
-// // // //   );
-// // // //   if (!cleanedTarget) return null;
-
-// // // //   // Cas spécifique 1 : [S. LOUIS] correspond à Louis SAGE
-// // // //   if (cleanedTarget.includes('louis') || cleanedTarget.includes('slouis')) {
-// // // //     const sageChef = chefsList.find((c) => {
-// // // //       const nom = cleanTextForMatching(decodeHtmlEntities(c.nom));
-// // // //       return nom.includes('sage') || nom.includes('louis');
-// // // //     });
-// // // //     if (sageChef) return sageChef;
-// // // //   }
-
-// // // //   // Cas spécifique 2 : [O. QUENARD] correspond à Olivier Quénard
-// // // //   if (cleanedTarget.includes('quenard') || cleanedTarget.includes('quanard')) {
-// // // //     const quenardChef = chefsList.find((c) => {
-// // // //       const nom = cleanTextForMatching(decodeHtmlEntities(c.nom));
-// // // //       return nom.includes('quenard') || nom.includes('quanard');
-// // // //     });
-// // // //     if (quenardChef) return quenardChef;
-// // // //   }
-
-// // // //   // 2. Correspondance générale (Nom complet, Nom de famille ou Prénom)
-// // // //   const found = chefsList.find((c) => {
-// // // //     const nomClean = cleanTextForMatching(decodeHtmlEntities(c.nom));
-// // // //     const parts = decodeHtmlEntities(c.nom).toLowerCase().split(/\s+/).filter(Boolean);
-// // // //     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || '');
-// // // //     const prenom = cleanTextForMatching(parts[0] || '');
-
-// // // //     return (
-// // // //       (nomClean && (cleanedTarget.includes(nomClean) || nomClean.includes(cleanedTarget))) ||
-// // // //       (nomDeFamille && nomDeFamille.length >= 3 && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget))) ||
-// // // //       (prenom && prenom.length >= 4 && cleanedTarget.includes(prenom))
-// // // //     );
-// // // //   });
-
-// // // //   if (found) return found;
-
-// // // //   // 3. Fallback par spécialité
-// // // //   return chefsList.find((c) => {
-// // // //     const spec = cleanTextForMatching(decodeHtmlEntities(c.specialite || ''));
-// // // //     return spec && spec.length >= 4 && cleanTextForMatching(raw).includes(spec);
-// // // //   }) || null;
-// // // // };
-
-
-// // // // // Décodage HTML et nettoyage robuste pour Moodle
-// // // // export const decodeHtmlEntities = (str) => {
-// // // //   return (str || '')
-// // // //     .replace(/&#039;/g, "'")
-// // // //     .replace(/&amp;/g, '&')
-// // // //     .replace(/&quot;/g, '"')
-// // // //     .replace(/&lt;/g, '<')
-// // // //     .replace(/&gt;/g, '>');
-// // // // };
-
-// // // // export const findChefFromWishText = (wishText, chefsList) => {
-// // // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
-
-// // // //   const raw = decodeHtmlEntities(String(wishText)).toLowerCase().trim();
-
-// // // //   // 1. DÉTECTION DIRECTE PAR PROJET OU PAR CHEF (100% GARANTI) :
-
-// // // //   // Olivier Quénard (QUEN / QUÃ©) : Matériaux / Caractérisation / [O. QUENARD]
-// // // //   if (raw.includes('quenard') || raw.includes('quénard') || raw.includes('quã') || raw.includes('matériaux') || raw.includes('materiaux')) {
-// // // //     const c = chefsList.find((ch) => {
-// // // //       const n = ch.nom.toLowerCase();
-// // // //       return n.startsWith('qu') || n.includes('quenard') || n.includes('quã');
-// // // //     });
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Louis Sage (SAGE) : Traitement d'images / Informatique industrielle / [S. LOUIS]
-// // // //   if (raw.includes('louis') || raw.includes('sage') || raw.includes('traitement') || raw.includes('image')) {
-// // // //     const c = chefsList.find((ch) => {
-// // // //       const n = ch.nom.toLowerCase();
-// // // //       return n.startsWith('sag') || n.includes('sage') || n.includes('louis');
-// // // //     });
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Stéphane D'Attanasio (DATT) : Interactions humain-machine / [S. D'ATTANASIO]
-// // // //   if (raw.includes('attanasio') || raw.includes('humain-robot') || raw.includes('interdisciplina')) {
-// // // //     const c = chefsList.find((ch) => {
-// // // //       const n = ch.nom.toLowerCase();
-// // // //       return n.includes('attanasio') || n.startsWith('datt') || n.includes("d'att");
-// // // //     });
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Marc Bonnal (BONN) : ERP / Organisation industrielle / [M. BONNAL]
-// // // //   if (raw.includes('bonnal') || raw.includes('erp') || raw.includes('organisation industrielle')) {
-// // // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bonnal') || ch.nom.toLowerCase().startsWith('bonn'));
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Allal Bouzid (BOUZ) : Smart Grid / [A. Bouzid]
-// // // //   if (raw.includes('bouzid') || raw.includes('smart grid')) {
-// // // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bouzid') || ch.nom.toLowerCase().startsWith('bouz'));
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Sébastien Corveleyn (CORV) : Calculs / Dimensionnement / [S. CORVELEYN]
-// // // //   if (raw.includes('corveleyn') || raw.includes('dimensionnement')) {
-// // // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('corveleyn') || ch.nom.toLowerCase().startsWith('corv'));
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Damien Deroland (DERO) : Cobotique / [D. DEROLAND]
-// // // //   if (raw.includes('deroland') || raw.includes('cobotique')) {
-// // // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('deroland') || ch.nom.toLowerCase().startsWith('dero'));
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Jean-Pierre Fradin (FRAD) : Thermique / Electronique de puissance / [J.P. FRADIN]
-// // // //   if (raw.includes('fradin') || raw.includes('thermique') || raw.includes('puissance')) {
-// // // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('fradin') || ch.nom.toLowerCase().startsWith('frad'));
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Toufik Guettari (GUET) : Data Science / Vision / IA / [T. GUETTARI]
-// // // //   if (raw.includes('guettari') || raw.includes('data science') || raw.includes('applis web')) {
-// // // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('guettari') || ch.nom.toLowerCase().startsWith('guet'));
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // Eric Loupiac (LOUP) : Machines Spéciales / [E. LOUPIAC]
-// // // //   if (raw.includes('loupiac') || raw.includes('machines spéciales') || raw.includes('machines speciales')) {
-// // // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('loupiac') || ch.nom.toLowerCase().startsWith('loup'));
-// // // //     if (c) return c;
-// // // //   }
-
-// // // //   // 2. CORRESPONDANCE GÉNÉRIQUE SI AUTRE FORMAT
-// // // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
-// // // //   const target = bracketMatch ? bracketMatch[1] : raw;
-// // // //   const cleanedTarget = cleanTextForMatching(target);
-
-// // // //   return chefsList.find((c) => {
-// // // //     const nomClean = cleanTextForMatching(c.nom);
-// // // //     return nomClean && (cleanedTarget.includes(nomClean) || nomClean.includes(cleanedTarget));
-// // // //   }) || null;
-// // // // };
-
-// // // // export const uploadBatchDocuments = async (items, type = 'cv', onProgress = null) => {
-// // // //   if (!items || items.length === 0) return { success: 0, errors: [] };
-
-// // // //   let successCount = 0;
-// // // //   const errors = [];
-
-// // // //   for (let i = 0; i < items.length; i++) {
-// // // //     const { file, etudiant_id } = items[i];
-// // // //     try {
-// // // //       await uploadDocument(etudiant_id, file, type);
-// // // //       successCount++;
-// // // //     } catch (err) {
-// // // //       errors.push({ file: file.name, error: err.message });
-// // // //     }
-// // // //     if (onProgress) {
-// // // //       onProgress(i + 1, items.length);
-// // // //     }
-// // // //   }
-
-// // // //   return { success: successCount, total: items.length, errors };
-// // // // };
-
-// // // // // ===== Chefs de projet =====
-// // // // export const fetchChefsDeProjet = async () => {
-// // // //   const { data, error } = await supabase.from('chefs_de_projet').select('*').order('nom');
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // ===== Étudiants =====
-// // // // export const fetchEtudiants = async () => {
-// // // //   const { data, error } = await supabase.from('etudiants').select('*').order('nom');
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const upsertEtudiant = async (etudiant) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('etudiants')
-// // // //     .upsert(etudiant, { onConflict: 'adresse_email' })
-// // // //     .select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // ===== Aptitudes & Appétences =====
-// // // // export const fetchAptitudesByEtudiant = async (etudiant_id) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('aptitudes')
-// // // //     .select('*')
-// // // //     .eq('etudiant_id', etudiant_id)
-// // // //     .maybeSingle();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const fetchApetencesByEtudiant = async (etudiant_id) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('apetences')
-// // // //     .select('*')
-// // // //     .eq('etudiant_id', etudiant_id)
-// // // //     .maybeSingle();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const fetchAllApetences = async () => {
-// // // //   const { data, error } = await supabase.from('apetences').select('*');
-// // // //   if (error) throw error;
-// // // //   return data || [];
-// // // // };
-
-// // // // // ===== Sélections / Vœux avec Priorité (1er, 2e, 3e choix) =====
-// // // // export const fetchSelections = async () => {
-// // // //   const { data, error } = await supabase.from('selections').select(`
-// // // //     id, etudiant_id, chef_de_projet_id, priorite,
-// // // //     etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path ),
-// // // //     chefs_de_projet ( id, nom, specialite, email )
-// // // //   `);
-// // // //   if (error) throw error;
-// // // //   return data.map((s) => ({
-// // // //     id: s.id,
-// // // //     etudiant: s.etudiants?.adresse_email,
-// // // //     chefDeProjet: s.chefs_de_projet?.nom,
-// // // //     etudiant_id: s.etudiant_id,
-// // // //     chef_de_projet_id: s.chef_de_projet_id,
-// // // //     priorite: s.priorite || 1,
-// // // //   }));
-// // // // };
-
-// // // // export const saveSelection = async (etudiant_id, chef_de_projet_id, priorite = 1) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('selections')
-// // // //     .upsert(
-// // // //       { etudiant_id, chef_de_projet_id, priorite: Number(priorite) || 1 },
-// // // //       { onConflict: 'etudiant_id,chef_de_projet_id' }
-// // // //     )
-// // // //     .select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const deleteSelection = async (etudiant_id, chef_de_projet_id) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('selections')
-// // // //     .delete()
-// // // //     .match({ etudiant_id, chef_de_projet_id });
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // ===== Disponibilités =====
-// // // // export const fetchDisponibiliteChef = async (chef_de_projet_id, date) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('disponibilite_binaire_chefprojet')
-// // // //     .select('*')
-// // // //     .match({ chef_de_projet_id, date })
-// // // //     .maybeSingle();
-// // // //   if (error) throw error;
-// // // //   return data || { chef_de_projet_id, date, ...emptySlots() };
-// // // // };
-
-// // // // export const saveDisponibiliteChef = async (chef_de_projet_id, date, slots) => {
-// // // //   const slotPayload = normalizeSlots(slots);
-// // // //   const { data, error } = await supabase
-// // // //     .from('disponibilite_binaire_chefprojet')
-// // // //     .upsert({ chef_de_projet_id, date, ...slotPayload }, { onConflict: 'chef_de_projet_id,date' })
-// // // //     .select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const fetchDisponibiliteEtudiant = async (etudiant_id, date) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('disponibilite_binaire_etudiant')
-// // // //     .select('*')
-// // // //     .match({ etudiant_id, date })
-// // // //     .maybeSingle();
-// // // //   if (error) throw error;
-// // // //   return data || { etudiant_id, date, ...emptySlots() };
-// // // // };
-
-// // // // export const saveDisponibiliteEtudiant = async (etudiant_id, date, slots) => {
-// // // //   const slotPayload = normalizeSlots(slots);
-// // // //   const { data, error } = await supabase
-// // // //     .from('disponibilite_binaire_etudiant')
-// // // //     .upsert({ etudiant_id, date, ...slotPayload }, { onConflict: 'etudiant_id,date' })
-// // // //     .select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // ===== Rendez-vous =====
-// // // // export const fetchRendezVous = async (date = null) => {
-// // // //   let query = supabase
-// // // //     .from('rendez_vous')
-// // // //     .select(
-// // // //       `
-// // // //       id, date, heure, heure_fin, chef_de_projet_id, etudiant_id,
-// // // //       chefs_de_projet ( id, nom ),
-// // // //       etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path )
-// // // //     `
-// // // //     )
-// // // //     .order('heure', { ascending: true });
-
-// // // //   if (date) query = query.eq('date', date);
-
-// // // //   const { data, error } = await query;
-// // // //   if (error) throw error;
-
-// // // //   return data.map((r) => ({
-// // // //     id: r.id,
-// // // //     date: r.date,
-// // // //     heure_debut: r.heure?.slice(0, 5) || '',
-// // // //     heure_fin: r.heure_fin?.slice(0, 5) || '',
-// // // //     chef_de_projet_id: r.chef_de_projet_id,
-// // // //     etudiant_id: r.etudiant_id || r.etudiants?.id,
-// // // //     chef_de_projet: r.chefs_de_projet?.nom,
-// // // //     etudiant: `${r.etudiants?.nom || ''} ${r.etudiants?.prenom || ''}`.trim(),
-// // // //     email_etudiant: r.etudiants?.adresse_email,
-// // // //     cv_path: r.etudiants?.cv_path,
-// // // //     lm_path: r.etudiants?.lm_path,
-// // // //   }));
-// // // // };
-
-// // // // export const genererRendezVous = async (dateDebut, dateFin, token) => {
-// // // //   const response = await fetch(`${supabaseUrl}/functions/v1/generer-rendez-vous`, {
-// // // //     method: 'POST',
-// // // //     headers: {
-// // // //       'Content-Type': 'application/json',
-// // // //       Authorization: `Bearer ${token}`,
-// // // //     },
-// // // //     body: JSON.stringify({ date_debut: dateDebut, date_fin: dateFin }),
-// // // //   });
-
-// // // //   if (!response.ok) {
-// // // //     const err = await response.json().catch(() => ({}));
-// // // //     throw new Error(err.error || `Erreur serveur: ${response.status}`);
-// // // //   }
-// // // //   return await response.json();
-// // // // };
-
-// // // // // ===== Évaluations =====
-// // // // export const fetchEvaluations = async () => {
-// // // //   const { data, error } = await supabase.from('evaluations').select(`
-// // // //     id, note, commentaire, chef_de_projet_id, etudiant_id,
-// // // //     etudiants ( nom, prenom, adresse_email ),
-// // // //     chefs_de_projet ( nom )
-// // // //   `);
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const saveEvaluation = async (chef_de_projet_id, etudiant_id, note, commentaire = '') => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('evaluations')
-// // // //     .upsert(
-// // // //       { chef_de_projet_id, etudiant_id, note, commentaire },
-// // // //       { onConflict: 'chef_de_projet_id,etudiant_id' }
-// // // //     )
-// // // //     .select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // ===== Affectations finales =====
-// // // // export const fetchAffectations = async () => {
-// // // //   const { data, error } = await supabase.from('affectation').select(`
-// // // //     id, chef_de_projet_id, etudiant_id,
-// // // //     etudiants ( id, nom, prenom, adresse_email, parcours ),
-// // // //     chefs_de_projet ( id, nom, specialite, email )
-// // // //   `);
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const saveAffectation = async (chef_de_projet_id, etudiant_id) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('affectation')
-// // // //     .upsert({ chef_de_projet_id, etudiant_id }, { onConflict: 'etudiant_id' })
-// // // //     .select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const deleteAffectation = async (etudiant_id) => {
-// // // //   const { data, error } = await supabase
-// // // //     .from('affectation')
-// // // //     .delete()
-// // // //     .eq('etudiant_id', etudiant_id);
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // ===== Imports en Masse =====
-// // // // export const importChefsDeProjet = async (rows) => {
-// // // //   const { data, error } = await supabase.from('chefs_de_projet').upsert(rows, { onConflict: 'email' }).select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const importEtudiants = async (rows) => {
-// // // //   const { data, error } = await supabase.from('etudiants').upsert(rows, { onConflict: 'adresse_email' }).select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const importAptitudes = async (rows) => {
-// // // //   const etudiants = await fetchEtudiants();
-// // // //   const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
-
-// // // //   const payload = rows
-// // // //     .map((r) => {
-// // // //       const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
-// // // //       if (!etudiant_id) return null;
-// // // //       const { adresse_email, ...rest } = r;
-// // // //       return { etudiant_id, ...rest };
-// // // //     })
-// // // //     .filter(Boolean);
-
-// // // //   const { data, error } = await supabase.from('aptitudes').upsert(payload, { onConflict: 'etudiant_id' }).select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // export const importApetences = async (rows) => {
-// // // //   const etudiants = await fetchEtudiants();
-// // // //   const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
-
-// // // //   const payload = rows
-// // // //     .map((r) => {
-// // // //       const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
-// // // //       if (!etudiant_id) return null;
-// // // //       const { adresse_email, ...rest } = r;
-// // // //       return { etudiant_id, ...rest };
-// // // //     })
-// // // //     .filter(Boolean);
-
-// // // //   const { data, error } = await supabase.from('apetences').upsert(payload, { onConflict: 'etudiant_id' }).select();
-// // // //   if (error) throw error;
-// // // //   return data;
-// // // // };
-
-// // // // // ===== FONCTIONS DE REMISE À ZÉRO CIBLÉES (Admin) =====
-
-// // // // export const resetAllSelections = async () => {
-// // // //   const { error } = await supabase.from('selections').delete().neq('id', 0);
-// // // //   if (error) throw error;
-// // // // };
-
-// // // // export const resetAllRendezVous = async (dateDebut = null, dateFin = null) => {
-// // // //   let query = supabase.from('rendez_vous').delete();
-// // // //   if (dateDebut && dateFin) {
-// // // //     query = query.gte('date', dateDebut).lte('date', dateFin);
-// // // //   } else {
-// // // //     query = query.neq('id', 0);
-// // // //   }
-// // // //   const { error } = await query;
-// // // //   if (error) throw error;
-// // // // };
-
-// // // // export const resetAllEvaluations = async () => {
-// // // //   const { error } = await supabase.from('evaluations').delete().neq('id', 0);
-// // // //   if (error) throw error;
-// // // // };
-
-// // // // export const resetAllAffectations = async () => {
-// // // //   const { error } = await supabase.from('affectation').delete().neq('id', 0);
-// // // //   if (error) throw error;
-// // // // };
-
-// // // // export const resetAllDisponibilites = async (cible = 'all', date = null) => {
-// // // //   if (cible === 'chefs' || cible === 'all') {
-// // // //     let q = supabase.from('disponibilite_binaire_chefprojet').delete();
-// // // //     if (date) q = q.eq('date', date);
-// // // //     else q = q.neq('id', 0);
-// // // //     const { error } = await q;
-// // // //     if (error) throw error;
-// // // //   }
-// // // //   if (cible === 'etudiants' || cible === 'all') {
-// // // //     let q = supabase.from('disponibilite_binaire_etudiant').delete();
-// // // //     if (date) q = q.eq('date', date);
-// // // //     else q = q.neq('id', 0);
-// // // //     const { error } = await q;
-// // // //     if (error) throw error;
-// // // //   }
-// // // // };
-
-// // // // export const deleteSingleDocument = async (etudiant_id, type = 'cv') => {
-// // // //   const filePath = `${type}/${etudiant_id}.pdf`;
-// // // //   await supabase.storage.from('documents').remove([filePath]);
-// // // //   const updatePayload = type === 'cv' ? { cv_path: null } : { lm_path: null };
-// // // //   const { error } = await supabase.from('etudiants').update(updatePayload).eq('id', etudiant_id);
-// // // //   if (error) throw error;
-// // // // };
-
-// // // // export const purgeAllDocuments = async () => {
-// // // //   const { data: cvFiles } = await supabase.storage.from('documents').list('cv');
-// // // //   if (cvFiles && cvFiles.length > 0) {
-// // // //     await supabase.storage.from('documents').remove(cvFiles.map((f) => `cv/${f.name}`));
-// // // //   }
-
-// // // //   const { data: lmFiles } = await supabase.storage.from('documents').list('lm');
-// // // //   if (lmFiles && lmFiles.length > 0) {
-// // // //     await supabase.storage.from('documents').remove(lmFiles.map((f) => `lm/${f.name}`));
-// // // //   }
-
-// // // //   const { error } = await supabase.from('etudiants').update({ cv_path: null, lm_path: null }).neq('id', 0);
-// // // //   if (error) throw error;
-// // // // };
-
-// // // // export const resetEntireDatabaseAndStorage = async () => {
-// // // //   try {
-// // // //     await purgeAllDocuments();
-// // // //   } catch (err) {
-// // // //     console.warn('Storage déjà vide ou erreur purge:', err);
-// // // //   }
-
-// // // //   const { data, error } = await supabase.rpc('reset_all_campaign_data');
-// // // //   if (error) {
-// // // //     const { error: fallbackErr } = await supabase.rpc('reset_selective_data', {
-// // // //       options: {
-// // // //         rendez_vous: true,
-// // // //         evaluations: true,
-// // // //         affectations: true,
-// // // //         selections: true,
-// // // //         disponibilites: true,
-// // // //         competences: true,
-// // // //         etudiants: true,
-// // // //         chefs: true,
-// // // //         users: true,
-// // // //       },
-// // // //     });
-// // // //     if (fallbackErr) throw fallbackErr;
-// // // //   }
-// // // //   return data;
-// // // // };
-
-// // // // export const clearClientStorageAndCookies = () => {
-// // // //   try {
-// // // //     localStorage.clear();
-// // // //     sessionStorage.clear();
-
-// // // //     const cookies = document.cookie.split(';');
-// // // //     for (let i = 0; i < cookies.length; i++) {
-// // // //       const cookie = cookies[i];
-// // // //       const eqPos = cookie.indexOf('=');
-// // // //       const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-// // // //       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-// // // //       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
-// // // //     }
-
-// // // //     if (window.caches) {
-// // // //       caches.keys().then((names) => {
-// // // //         for (const name of names) caches.delete(name);
-// // // //       });
-// // // //     }
-// // // //   } catch (err) {
-// // // //     console.warn('Erreur nettoyage client:', err);
-// // // //   }
-// // // // };
-
-// // // import { createClient } from '@supabase/supabase-js';
-
-// // // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-// // // const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// // // export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// // // const emptySlots = () =>
-// // //   Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`slot${i + 1}`, '0']));
-
-// // // const normalizeSlots = (slots) => {
-// // //   if (Array.isArray(slots)) {
-// // //     const obj = {};
-// // //     for (let i = 0; i < 40; i++) {
-// // //       obj[`slot${i + 1}`] = String(slots[i] ?? '0');
-// // //     }
-// // //     return obj;
-// // //   }
-// // //   return slots;
-// // // };
-
-// // // // ============================================================================
-// // // // REFERENTIEL DYNAMIQUE DES COMPETENCES (Parametrable par Promotion)
-// // // // ============================================================================
-
-// // // export const DEFAULT_COMPETENCES = [
-// // //   { code: 'calculs_simulation_numerique', label: 'Calculs & Simulation', ordre: 1, actif: true },
-// // //   { code: 'essais_caracterisation', label: 'Essais & Caracterisation', ordre: 2, actif: true },
-// // //   { code: 'fabrication_prototypage', label: 'Fabrication & Proto', ordre: 3, actif: true },
-// // //   { code: 'conception_mecanique', label: 'Conception Meca', ordre: 4, actif: true },
-// // //   { code: 'automatique_automatisme', label: 'Automatique', ordre: 5, actif: true },
-// // //   { code: 'iot_systeme_embarque', label: 'IOT & Embarque', ordre: 6, actif: true },
-// // //   { code: 'robot_cobot', label: 'Robot & Cobot', ordre: 7, actif: true },
-// // //   { code: 'vision', label: 'Vision Industrielle', ordre: 8, actif: true },
-// // //   { code: 'ia', label: 'Intelligence Artificielle', ordre: 9, actif: true },
-// // //   { code: 'ihm_appli_web_mobile', label: 'IHM & App Web/Mobile', ordre: 10, actif: true },
-// // //   { code: 'ethique_ergonomie', label: 'Ethique & Ergonomie', ordre: 11, actif: true },
-// // // ];
-
-// // // export const fetchReferentielCompetences = async (onlyActive = true) => {
-// // //   let query = supabase.from('referentiel_competences').select('*').order('ordre', { ascending: true });
-// // //   if (onlyActive) query = query.eq('actif', true);
-
-// // //   const { data, error } = await query;
-// // //   if (error) throw error;
-
-// // //   if (!data || data.length === 0) {
-// // //     return DEFAULT_COMPETENCES.map((c, idx) => ({ id: idx + 1, ...c }));
-// // //   }
-// // //   return data;
-// // // };
-
-// // // export const saveReferentielCompetence = async (competence) => {
-// // //   const payload = {
-// // //     code: competence.code.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'),
-// // //     label: competence.label.trim(),
-// // //     description: competence.description?.trim() || '',
-// // //     ordre: Number(competence.ordre || 1),
-// // //     actif: competence.actif !== undefined ? competence.actif : true,
-// // //   };
-// // //   if (competence.id) payload.id = competence.id;
-
-// // //   const { data, error } = await supabase
-// // //     .from('referentiel_competences')
-// // //     .upsert(payload, { onConflict: 'code' })
-// // //     .select();
-// // //   if (error) throw error;
-// // //   return data;
-// // // };
-
-// // // export const deleteReferentielCompetence = async (id) => {
-// // //   const { data, error } = await supabase
-// // //     .from('referentiel_competences')
-// // //     .delete()
-// // //     .eq('id', id);
-// // //   if (error) throw error;
-// // //   return data;
-// // // };
-
-// // // export const resetReferentielToDefaults = async () => {
-// // //   const { data, error } = await supabase
-// // //     .from('referentiel_competences')
-// // //     .upsert(DEFAULT_COMPETENCES, { onConflict: 'code' })
-// // //     .select();
-// // //   if (error) throw error;
-// // //   return data;
-// // // };
-
-// // // export const fetchDynamicScoresByEtudiant = async (etudiant_id) => {
-// // //   const { data, error } = await supabase
-// // //     .from('etudiant_competences')
-// // //     .select(`
-// // //       competence_id, score_aptitude, score_appetence,
-// // //       referentiel_competences ( id, code, label, ordre, actif )
-// // //     `)
-// // //     .eq('etudiant_id', etudiant_id);
-// // //   if (error) throw error;
-
-// // //   const scoresMap = {};
-// // //   (data || []).forEach((row) => {
-// // //     const comp = row.referentiel_competences;
-// // //     if (comp && comp.actif) {
-// // //       scoresMap[comp.code] = {
-// // //         aptitude: row.score_aptitude ?? 0,
-// // //         appetence: row.score_appetence ?? 0,
-// // //         label: comp.label,
-// // //         ordre: comp.ordre,
-// // //       };
-// // //     }
-// // //   });
-
-// // //   return scoresMap;
-// // // };
-
-// // // export const normalizeSpecialiteKey = (spec, customCompetences = null) => {
-// // //   if (!spec) return '';
-// // //   const clean = spec.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-
-// // //   if (customCompetences && Array.isArray(customCompetences)) {
-// // //     const found = customCompetences.find((c) => {
-// // //       const cLabel = c.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-// // //       const cCode = c.code.toLowerCase();
-// // //       return clean.includes(cLabel) || clean.includes(cCode) || cLabel.includes(clean);
-// // //     });
-// // //     if (found) return found.code;
-// // //   }
-
-// // //   if (clean.includes('calcul') || clean.includes('simulation')) return 'calculs_simulation_numerique';
-// // //   if (clean.includes('essai') || clean.includes('caracterisation')) return 'essais_caracterisation';
-// // //   if (clean.includes('fab') || clean.includes('proto')) return 'fabrication_prototypage';
-// // //   if (clean.includes('conception') || clean.includes('meca')) return 'conception_mecanique';
-// // //   if (clean.includes('auto')) return 'automatique_automatisme';
-// // //   if (clean.includes('iot') || clean.includes('embarque')) return 'iot_systeme_embarque';
-// // //   if (clean.includes('robot') || clean.includes('cobot')) return 'robot_cobot';
-// // //   if (clean.includes('vision')) return 'vision';
-// // //   if (clean === 'ia' || clean.includes('intelligence')) return 'ia';
-// // //   if (clean.includes('ihm') || clean.includes('web') || clean.includes('mobile')) return 'ihm_appli_web_mobile';
-// // //   if (clean.includes('ethique') || clean.includes('ergo')) return 'ethique_ergonomie';
-// // //   return clean.replace(/[^a-z0-9_]/g, '_');
-// // // };
-
-// // // export const computeChefRanksForStudent = (etudiantAppetences, chefsList, referentielCompetences = null) => {
-// // //   if (!etudiantAppetences || !chefsList) return new Map();
-
-// // //   const scoredChefs = chefsList.map((chef) => {
-// // //     const key = normalizeSpecialiteKey(chef.specialite, referentielCompetences);
-// // //     const rawVal = etudiantAppetences[key];
-// // //     const score = Number(typeof rawVal === 'object' && rawVal !== null ? (rawVal.appetence ?? 0) : (rawVal ?? 0));
-// // //     return {
-// // //       chef_id: chef.id,
-// // //       score,
-// // //       nom: chef.nom || '',
-// // //       specialite: chef.specialite,
-// // //     };
-// // //   });
-
-// // //   scoredChefs.sort((a, b) => {
-// // //     if (b.score !== a.score) return b.score - a.score;
-// // //     return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-// // //   });
-
-// // //   const rankMap = new Map();
-// // //   scoredChefs.forEach((sc, index) => {
-// // //     rankMap.set(sc.chef_id, {
-// // //       rank: index + 1,
-// // //       score: sc.score,
-// // //     });
-// // //   });
-
-// // //   return rankMap;
-// // // };
-
-// // // // ============================================================================
-// // // // JAUGES ET QUOTAS DE NOTATION (Par Chef de Projet)
-// // // // ============================================================================
-
-// // // export const DEFAULT_GRADE_PERCENTAGES = {
-// // //   pourcentage_a: 25.0,
-// // //   pourcentage_b: 25.0,
-// // //   pourcentage_c: 25.0,
-// // //   pourcentage_d: 25.0,
-// // // };
-
-// // // export const fetchQuotasChefs = async () => {
-// // //   const { data, error } = await supabase.from('quotas_evaluations_chef').select('*');
-// // //   if (error) throw error;
-// // //   return data || [];
-// // // };
-
-// // // export const saveQuotaChef = async (chef_de_projet_id, percentages) => {
-// // //   const payload = {
-// // //     chef_de_projet_id: Number(chef_de_projet_id),
-// // //     pourcentage_a: Number(percentages.pourcentage_a ?? 25),
-// // //     pourcentage_b: Number(percentages.pourcentage_b ?? 25),
-// // //     pourcentage_c: Number(percentages.pourcentage_c ?? 25),
-// // //     pourcentage_d: Number(percentages.pourcentage_d ?? 25),
-// // //   };
-
-// // //   const { data, error } = await supabase
-// // //     .from('quotas_evaluations_chef')
-// // //     .upsert(payload, { onConflict: 'chef_de_projet_id' })
-// // //     .select();
-// // //   if (error) throw error;
-// // //   return data;
-// // // };
-
-// // // export const calculateChefGradeQuotas = (nbEtudiants, percentages = DEFAULT_GRADE_PERCENTAGES) => {
-// // //   const total = Number(nbEtudiants) || 0;
-// // //   if (total <= 0) {
-// // //     return { maxA: 0, maxB: 0, maxC: 0, maxD: 0, total: 0 };
-// // //   }
-
-// // //   const pctA = Number(percentages.pourcentage_a ?? 25) / 100;
-// // //   const pctB = Number(percentages.pourcentage_b ?? 25) / 100;
-// // //   const pctD = Number(percentages.pourcentage_d ?? 25) / 100;
-
-// // //   let maxA = Math.round(total * pctA);
-// // //   let maxB = Math.round(total * pctB);
-// // //   let maxD = Math.round(total * pctD);
-
-// // //   if (maxA + maxB + maxD > total) {
-// // //     maxD = Math.max(0, total - (maxA + maxB));
-// // //   }
-
-// // //   let maxC = Math.max(0, total - (maxA + maxB + maxD));
-
-// // //   return {
-// // //     maxA,
-// // //     maxB,
-// // //     maxC,
-// // //     maxD,
-// // //     total,
-// // //   };
-// // // };
-
-// // // // ============================================================================
-// // // // DÉTECTION DES DOCUMENTS ET DES VŒUX MOODLE
-// // // // ============================================================================
-
-// // // export const getDocumentPublicUrl = (path) => {
-// // //   if (!path) return null;
-// // //   const { data } = supabase.storage.from('documents').getPublicUrl(path);
-// // //   return `${data.publicUrl}?t=${Date.now()}`;
-// // // };
-
-// // // export const uploadDocument = async (etudiant_id, file, type = 'cv') => {
-// // //   if (!file) throw new Error('Aucun fichier sélectionné.');
-// // //   if (file.size > 5 * 1024 * 1024) throw new Error('Le fichier dépasse 5 Mo.');
-
-// // //   const storagePath = `${type}/${etudiant_id}.pdf`;
-// // //   const { error: uploadErr } = await supabase.storage
-// // //     .from('documents')
-// // //     .upload(storagePath, file, {
-// // //       contentType: 'application/pdf',
-// // //       upsert: true,
-// // //     });
-// // //   if (uploadErr) throw uploadErr;
-
-// // //   const updatePayload = type === 'cv' ? { cv_path: storagePath } : { lm_path: storagePath };
-// // //   const { error: dbErr } = await supabase
-// // //     .from('etudiants')
-// // //     .update(updatePayload)
-// // //     .eq('id', etudiant_id);
-// // //   if (dbErr) throw dbErr;
-
-// // //   return storagePath;
-// // // };
-
-// // // export const cleanTextForMatching = (str) => {
-// // //   return (str || '')
-// // //     .normalize('NFD')
-// // //     .replace(/[\u0300-\u036f]/g, '')
-// // //     .toLowerCase()
-// // //     .replace(/(\.pdf|_cv|_lm|cv|lm)/gi, '')
-// // //     .replace(/[^a-z0-9]/g, '');
-// // // };
-
-// // // export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
-// // //   if (!filePathOrName || !etudiantsList || etudiantsList.length === 0) return null;
-
-// // //   let target = filePathOrName;
-// // //   if (filePathOrName.includes('/')) {
-// // //     const parts = filePathOrName.split('/').filter(Boolean);
-// // //     if (parts.length >= 2) target = parts[parts.length - 2];
-// // //   } else if (filePathOrName.includes('\\')) {
-// // //     const parts = filePathOrName.split('\\').filter(Boolean);
-// // //     if (parts.length >= 2) target = parts[parts.length - 2];
-// // //   }
-
-// // //   const cleanedTarget = cleanTextForMatching(target);
-// // //   if (!cleanedTarget) return null;
-
-// // //   return etudiantsList.find((e) => {
-// // //     const nom = cleanTextForMatching(e.nom);
-// // //     const prenom = cleanTextForMatching(e.prenom);
-// // //     const nomPrenom = `${nom}${prenom}`;
-// // //     const prenomNom = `${prenom}${nom}`;
-// // //     const emailPrefix = cleanTextForMatching(e.adresse_email?.split('@')[0]);
-
-// // //     return (
-// // //       (nom && prenom && (cleanedTarget.includes(nomPrenom) || cleanedTarget.includes(prenomNom))) ||
-// // //       (nomPrenom && nomPrenom.includes(cleanedTarget)) ||
-// // //       (prenomNom && prenomNom.includes(cleanedTarget)) ||
-// // //       (emailPrefix && (cleanedTarget.includes(emailPrefix) || emailPrefix.includes(cleanedTarget)))
-// // //     );
-// // //   }) || null;
-// // // };
-
-// // // export const decodeHtmlEntities = (str) => {
-// // //   return (str || '')
-// // //     .replace(/&#039;/g, "'")
-// // //     .replace(/&amp;/g, '&')
-// // //     .replace(/&quot;/g, '"')
-// // //     .replace(/&lt;/g, '<')
-// // //     .replace(/&gt;/g, '>');
-// // // };
-
-// // // export const findChefFromWishText = (wishText, chefsList) => {
-// // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
-
-// // //   const raw = decodeHtmlEntities(String(wishText)).toLowerCase().trim();
-
-// // //   // 1. Detection directe par projet ou chef :
-
-// // //   // Olivier Quenard : Materiaux / Caracterisation / [O. QUENARD]
-// // //   if (raw.includes('quenard') || raw.includes('quénard') || raw.includes('quã') || raw.includes('matériaux') || raw.includes('materiaux')) {
-// // //     const c = chefsList.find((ch) => {
-// // //       const n = ch.nom.toLowerCase();
-// // //       return n.startsWith('qu') || n.includes('quenard') || n.includes('quã');
-// // //     });
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Louis Sage : Traitement d'images / Informatique industrielle / [S. LOUIS]
-// // //   if (raw.includes('louis') || raw.includes('sage') || raw.includes('traitement') || raw.includes('image')) {
-// // //     const c = chefsList.find((ch) => {
-// // //       const n = ch.nom.toLowerCase();
-// // //       return n.startsWith('sag') || n.includes('sage') || n.includes('louis');
-// // //     });
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Stephane D'Attanasio : Interactions humain-machine / [S. D'ATTANASIO]
-// // //   if (raw.includes('attanasio') || raw.includes('humain-robot') || raw.includes('interdisciplina')) {
-// // //     const c = chefsList.find((ch) => {
-// // //       const n = ch.nom.toLowerCase();
-// // //       return n.includes('attanasio') || n.startsWith('datt') || n.includes("d'att");
-// // //     });
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Marc Bonnal : ERP / Organisation industrielle / [M. BONNAL]
-// // //   if (raw.includes('bonnal') || raw.includes('erp') || raw.includes('organisation industrielle')) {
-// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bonnal') || ch.nom.toLowerCase().startsWith('bonn'));
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Allal Bouzid : Smart Grid / [A. Bouzid]
-// // //   if (raw.includes('bouzid') || raw.includes('smart grid')) {
-// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bouzid') || ch.nom.toLowerCase().startsWith('bouz'));
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Sylvain Corveleyn : Calculs / Dimensionnement / [S. CORVELEYN]
-// // //   if (raw.includes('corveleyn') || raw.includes('dimensionnement')) {
-// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('corveleyn') || ch.nom.toLowerCase().startsWith('corv'));
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Damien Deroland : Cobotique / [D. DEROLAND]
-// // //   if (raw.includes('deroland') || raw.includes('cobotique')) {
-// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('deroland') || ch.nom.toLowerCase().startsWith('dero'));
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Jean-Pierre Fradin : Thermique / Electronique de puissance / [J.P. FRADIN]
-// // //   if (raw.includes('fradin') || raw.includes('thermique') || raw.includes('puissance')) {
-// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('fradin') || ch.nom.toLowerCase().startsWith('frad'));
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Toufik Guettari : Data Science / Vision / IA / [T. GUETTARI]
-// // //   if (raw.includes('guettari') || raw.includes('data science') || raw.includes('applis web')) {
-// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('guettari') || ch.nom.toLowerCase().startsWith('guet'));
-// // //     if (c) return c;
-// // //   }
-
-// // //   // Eric Loupiac : Machines Speciales / [E. LOUPIAC]
-// // //   if (raw.includes('loupiac') || raw.includes('machines spéciales') || raw.includes('machines speciales')) {
-// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('loupiac') || ch.nom.toLowerCase().startsWith('loup'));
-// // //     if (c) return c;
-// // //   }
-
-// // //   // 2. Correspondance generique si autre format
-// // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
-// // //   const target = bracketMatch ? bracketMatch[1] : raw;
-// // //   const cleanedTarget = cleanTextForMatching(target);
-
-// // //   return chefsList.find((c) => {
-// // //     const nomClean = cleanTextForMatching(c.nom);
-// // //     return nomClean && (cleanedTarget.includes(nomClean) || nomClean.includes(cleanedTarget));
 // // //   }) || null;
 // // // };
 
@@ -5781,7 +3983,7 @@
 // // //   return data;
 // // // };
 
-// // // // ===== Etudiants =====
+// // // // ===== Étudiants =====
 // // // export const fetchEtudiants = async () => {
 // // //   const { data, error } = await supabase.from('etudiants').select('*').order('nom');
 // // //   if (error) throw error;
@@ -5797,7 +3999,7 @@
 // // //   return data;
 // // // };
 
-// // // // ===== Aptitudes & Appetences =====
+// // // // ===== Aptitudes & Appétences =====
 // // // export const fetchAptitudesByEtudiant = async (etudiant_id) => {
 // // //   const { data, error } = await supabase
 // // //     .from('aptitudes')
@@ -5824,42 +4026,10 @@
 // // //   return data || [];
 // // // };
 
-// // // // ============================================================================
-// // // // NOUVEAU : VOEUX COMPLETS DES ETUDIANTS (Rangs 1 a 10 pour Affectation)
-// // // // ============================================================================
-
-// // // export const fetchAllEtudiantVoeux = async () => {
-// // //   const { data, error } = await supabase
-// // //     .from('etudiant_voeux')
-// // //     .select('id, etudiant_id, chef_de_projet_id, rang');
-// // //   if (error) throw error;
-// // //   return data || [];
-// // // };
-
-// // // export const saveEtudiantVoeu = async (etudiant_id, chef_de_projet_id, rang) => {
-// // //   const { data, error } = await supabase
-// // //     .from('etudiant_voeux')
-// // //     .upsert(
-// // //       { etudiant_id, chef_de_projet_id, rang: Number(rang) },
-// // //       { onConflict: 'etudiant_id,chef_de_projet_id' }
-// // //     )
-// // //     .select();
-// // //   if (error) throw error;
-// // //   return data;
-// // // };
-
-// // // export const resetAllEtudiantVoeux = async () => {
-// // //   const { error } = await supabase.from('etudiant_voeux').delete().neq('id', 0);
-// // //   if (error) throw error;
-// // // };
-
-// // // // ============================================================================
-// // // // SELECTIONS (Top 3 pour les Entretiens et Rendez-vous)
-// // // // ============================================================================
-
+// // // // ===== Sélections / Vœux =====
 // // // export const fetchSelections = async () => {
 // // //   const { data, error } = await supabase.from('selections').select(`
-// // //     id, etudiant_id, chef_de_projet_id, priorite,
+// // //     id, etudiant_id, chef_de_projet_id,
 // // //     etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path ),
 // // //     chefs_de_projet ( id, nom, specialite, email )
 // // //   `);
@@ -5870,17 +4040,13 @@
 // // //     chefDeProjet: s.chefs_de_projet?.nom,
 // // //     etudiant_id: s.etudiant_id,
 // // //     chef_de_projet_id: s.chef_de_projet_id,
-// // //     priorite: s.priorite || 1,
 // // //   }));
 // // // };
 
-// // // export const saveSelection = async (etudiant_id, chef_de_projet_id, priorite = 1) => {
+// // // export const saveSelection = async (etudiant_id, chef_de_projet_id) => {
 // // //   const { data, error } = await supabase
 // // //     .from('selections')
-// // //     .upsert(
-// // //       { etudiant_id, chef_de_projet_id, priorite: Number(priorite) || 1 },
-// // //       { onConflict: 'etudiant_id,chef_de_projet_id' }
-// // //     )
+// // //     .upsert({ etudiant_id, chef_de_projet_id }, { onConflict: 'etudiant_id,chef_de_projet_id' })
 // // //     .select();
 // // //   if (error) throw error;
 // // //   return data;
@@ -5895,7 +4061,7 @@
 // // //   return data;
 // // // };
 
-// // // // ===== Disponibilites =====
+// // // // ===== Disponibilités =====
 // // // export const fetchDisponibiliteChef = async (chef_de_projet_id, date) => {
 // // //   const { data, error } = await supabase
 // // //     .from('disponibilite_binaire_chefprojet')
@@ -5986,7 +4152,7 @@
 // // //   return await response.json();
 // // // };
 
-// // // // ===== Evaluations =====
+// // // // ===== Évaluations =====
 // // // export const fetchEvaluations = async () => {
 // // //   const { data, error } = await supabase.from('evaluations').select(`
 // // //     id, note, commentaire, chef_de_projet_id, etudiant_id,
@@ -6087,7 +4253,7 @@
 // // //   return data;
 // // // };
 
-// // // // ===== FONCTIONS DE REMISE A ZERO CIBLEES (Admin) =====
+// // // // ===== FONCTIONS DE REMISE À ZÉRO CIBLÉES (Admin) =====
 
 // // // export const resetAllSelections = async () => {
 // // //   const { error } = await supabase.from('selections').delete().neq('id', 0);
@@ -6159,13 +4325,983 @@
 // // //   try {
 // // //     await purgeAllDocuments();
 // // //   } catch (err) {
-// // //     console.warn('Storage deja vide ou erreur purge:', err);
+// // //     console.warn('Storage déjà vide ou erreur purge:', err);
 // // //   }
 
+// // //   const { data, error } = await supabase.rpc('reset_all_campaign_data');
+// // //   if (error) {
+// // //     const { error: fallbackErr } = await supabase.rpc('reset_selective_data', {
+// // //       options: {
+// // //         rendez_vous: true,
+// // //         evaluations: true,
+// // //         affectations: true,
+// // //         selections: true,
+// // //         disponibilites: true,
+// // //         competences: true,
+// // //         etudiants: true,
+// // //         chefs: true,
+// // //         users: true,
+// // //       },
+// // //     });
+// // //     if (fallbackErr) throw fallbackErr;
+// // //   }
+// // //   return data;
+// // // };
+
+// // // export const clearClientStorageAndCookies = () => {
 // // //   try {
-// // //     await resetAllEtudiantVoeux();
+// // //     localStorage.clear();
+// // //     sessionStorage.clear();
+
+// // //     const cookies = document.cookie.split(';');
+// // //     for (let i = 0; i < cookies.length; i++) {
+// // //       const cookie = cookies[i];
+// // //       const eqPos = cookie.indexOf('=');
+// // //       const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+// // //       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+// // //       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+// // //     }
+
+// // //     if (window.caches) {
+// // //       caches.keys().then((names) => {
+// // //         for (const name of names) caches.delete(name);
+// // //       });
+// // //     }
 // // //   } catch (err) {
-// // //     console.warn('Erreur purge voeux:', err);
+// // //     console.warn('Erreur nettoyage client:', err);
+// // //   }
+// // // };
+
+
+// // import { createClient } from '@supabase/supabase-js';
+
+// // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+// // const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// // export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// // const emptySlots = () =>
+// //   Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`slot${i + 1}`, '0']));
+
+// // const normalizeSlots = (slots) => {
+// //   if (Array.isArray(slots)) {
+// //     const obj = {};
+// //     for (let i = 0; i < 40; i++) {
+// //       obj[`slot${i + 1}`] = String(slots[i] ?? '0');
+// //     }
+// //     return obj;
+// //   }
+// //   return slots;
+// // };
+
+// // // ============================================================================
+// // // RÉFÉRENTIEL DYNAMIQUE DES COMPÉTENCES (Paramétrable par Promotion)
+// // // ============================================================================
+
+// // export const DEFAULT_COMPETENCES = [
+// //   { code: 'calculs_simulation_numerique', label: 'Calculs & Simulation', ordre: 1, actif: true },
+// //   { code: 'essais_caracterisation', label: 'Essais & Caractérisation', ordre: 2, actif: true },
+// //   { code: 'fabrication_prototypage', label: 'Fabrication & Proto', ordre: 3, actif: true },
+// //   { code: 'conception_mecanique', label: 'Conception Méca', ordre: 4, actif: true },
+// //   { code: 'automatique_automatisme', label: 'Automatique', ordre: 5, actif: true },
+// //   { code: 'iot_systeme_embarque', label: 'IOT & Embarqué', ordre: 6, actif: true },
+// //   { code: 'robot_cobot', label: 'Robot & Cobot', ordre: 7, actif: true },
+// //   { code: 'vision', label: 'Vision Industrielle', ordre: 8, actif: true },
+// //   { code: 'ia', label: 'Intelligence Artificielle', ordre: 9, actif: true },
+// //   { code: 'ihm_appli_web_mobile', label: 'IHM & App Web/Mobile', ordre: 10, actif: true },
+// //   { code: 'ethique_ergonomie', label: 'Éthique & Ergonomie', ordre: 11, actif: true },
+// // ];
+
+// // export const fetchReferentielCompetences = async (onlyActive = true) => {
+// //   let query = supabase.from('referentiel_competences').select('*').order('ordre', { ascending: true });
+// //   if (onlyActive) query = query.eq('actif', true);
+  
+// //   const { data, error } = await query;
+// //   if (error) throw error;
+  
+// //   if (!data || data.length === 0) {
+// //     return DEFAULT_COMPETENCES.map((c, idx) => ({ id: idx + 1, ...c }));
+// //   }
+// //   return data;
+// // };
+
+// // export const saveReferentielCompetence = async (competence) => {
+// //   const payload = {
+// //     code: competence.code.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+// //     label: competence.label.trim(),
+// //     description: competence.description?.trim() || '',
+// //     ordre: Number(competence.ordre || 1),
+// //     actif: competence.actif !== undefined ? competence.actif : true,
+// //   };
+// //   if (competence.id) payload.id = competence.id;
+
+// //   const { data, error } = await supabase
+// //     .from('referentiel_competences')
+// //     .upsert(payload, { onConflict: 'code' })
+// //     .select();
+// //   if (error) throw error;
+// //   return data;
+// // };
+
+// // export const deleteReferentielCompetence = async (id) => {
+// //   const { data, error } = await supabase
+// //     .from('referentiel_competences')
+// //     .delete()
+// //     .eq('id', id);
+// //   if (error) throw error;
+// //   return data;
+// // };
+
+// // export const resetReferentielToDefaults = async () => {
+// //   const { data, error } = await supabase
+// //     .from('referentiel_competences')
+// //     .upsert(DEFAULT_COMPETENCES, { onConflict: 'code' })
+// //     .select();
+// //   if (error) throw error;
+// //   return data;
+// // };
+
+// // export const fetchDynamicScoresByEtudiant = async (etudiant_id) => {
+// //   const { data, error } = await supabase
+// //     .from('etudiant_competences')
+// //     .select(`
+// //       competence_id, score_aptitude, score_appetence,
+// //       referentiel_competences ( id, code, label, ordre, actif )
+// //     `)
+// //     .eq('etudiant_id', etudiant_id);
+// //   if (error) throw error;
+
+// //   const scoresMap = {};
+// //   (data || []).forEach((row) => {
+// //     const comp = row.referentiel_competences;
+// //     if (comp && comp.actif) {
+// //       scoresMap[comp.code] = {
+// //         aptitude: row.score_aptitude ?? 0,
+// //         appetence: row.score_appetence ?? 0,
+// //         label: comp.label,
+// //         ordre: comp.ordre,
+// //       };
+// //     }
+// //   });
+
+// //   return scoresMap;
+// // };
+
+// // export const normalizeSpecialiteKey = (spec, customCompetences = null) => {
+// //   if (!spec) return '';
+// //   const clean = spec.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+// //   if (customCompetences && Array.isArray(customCompetences)) {
+// //     const found = customCompetences.find((c) => {
+// //       const cLabel = c.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// //       const cCode = c.code.toLowerCase();
+// //       return clean.includes(cLabel) || clean.includes(cCode) || cLabel.includes(clean);
+// //     });
+// //     if (found) return found.code;
+// //   }
+
+// //   if (clean.includes('calcul') || clean.includes('simulation')) return 'calculs_simulation_numerique';
+// //   if (clean.includes('essai') || clean.includes('caracterisation')) return 'essais_caracterisation';
+// //   if (clean.includes('fab') || clean.includes('proto')) return 'fabrication_prototypage';
+// //   if (clean.includes('conception') || clean.includes('meca')) return 'conception_mecanique';
+// //   if (clean.includes('auto')) return 'automatique_automatisme';
+// //   if (clean.includes('iot') || clean.includes('embarque')) return 'iot_systeme_embarque';
+// //   if (clean.includes('robot') || clean.includes('cobot')) return 'robot_cobot';
+// //   if (clean.includes('vision')) return 'vision';
+// //   if (clean === 'ia' || clean.includes('intelligence')) return 'ia';
+// //   if (clean.includes('ihm') || clean.includes('web') || clean.includes('mobile')) return 'ihm_appli_web_mobile';
+// //   if (clean.includes('ethique') || clean.includes('ergo')) return 'ethique_ergonomie';
+// //   return clean.replace(/[^a-z0-9_]/g, '_');
+// // };
+
+// // export const computeChefRanksForStudent = (etudiantAppetences, chefsList, referentielCompetences = null) => {
+// //   if (!etudiantAppetences || !chefsList) return new Map();
+
+// //   const scoredChefs = chefsList.map((chef) => {
+// //     const key = normalizeSpecialiteKey(chef.specialite, referentielCompetences);
+// //     const rawVal = etudiantAppetences[key];
+// //     const score = Number(typeof rawVal === 'object' && rawVal !== null ? (rawVal.appetence ?? 0) : (rawVal ?? 0));
+// //     return {
+// //       chef_id: chef.id,
+// //       score,
+// //       nom: chef.nom || '',
+// //       specialite: chef.specialite,
+// //     };
+// //   });
+
+// //   scoredChefs.sort((a, b) => {
+// //     if (b.score !== a.score) return b.score - a.score;
+// //     return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
+// //   });
+
+// //   const rankMap = new Map();
+// //   scoredChefs.forEach((sc, index) => {
+// //     rankMap.set(sc.chef_id, {
+// //       rank: index + 1,
+// //       score: sc.score,
+// //     });
+// //   });
+
+// //   return rankMap;
+// // };
+
+// // // ============================================================================
+// // // JAUGES ET QUOTAS DE NOTATION (Par Chef de Projet)
+// // // ============================================================================
+
+// // export const DEFAULT_GRADE_PERCENTAGES = {
+// //   pourcentage_a: 25.0,
+// //   pourcentage_b: 25.0,
+// //   pourcentage_c: 25.0,
+// //   pourcentage_d: 25.0,
+// // };
+
+// // export const fetchQuotasChefs = async () => {
+// //   const { data, error } = await supabase.from('quotas_evaluations_chef').select('*');
+// //   if (error) throw error;
+// //   return data || [];
+// // };
+
+// // export const saveQuotaChef = async (chef_de_projet_id, percentages) => {
+// //   const payload = {
+// //     chef_de_projet_id: Number(chef_de_projet_id),
+// //     pourcentage_a: Number(percentages.pourcentage_a ?? 25),
+// //     pourcentage_b: Number(percentages.pourcentage_b ?? 25),
+// //     pourcentage_c: Number(percentages.pourcentage_c ?? 25),
+// //     pourcentage_d: Number(percentages.pourcentage_d ?? 25),
+// //   };
+
+// //   const { data, error } = await supabase
+// //     .from('quotas_evaluations_chef')
+// //     .upsert(payload, { onConflict: 'chef_de_projet_id' })
+// //     .select();
+// //   if (error) throw error;
+// //   return data;
+// // };
+
+// // export const calculateChefGradeQuotas = (nbEtudiants, percentages = DEFAULT_GRADE_PERCENTAGES) => {
+// //   const total = Number(nbEtudiants) || 0;
+// //   if (total <= 0) {
+// //     return { maxA: 0, maxB: 0, maxC: 0, maxD: 0, total: 0 };
+// //   }
+
+// //   const pctA = Number(percentages.pourcentage_a ?? 25) / 100;
+// //   const pctB = Number(percentages.pourcentage_b ?? 25) / 100;
+// //   const pctD = Number(percentages.pourcentage_d ?? 25) / 100;
+
+// //   let maxA = Math.round(total * pctA);
+// //   let maxB = Math.round(total * pctB);
+// //   let maxD = Math.round(total * pctD);
+
+// //   if (maxA + maxB + maxD > total) {
+// //     maxD = Math.max(0, total - (maxA + maxB));
+// //   }
+
+// //   let maxC = Math.max(0, total - (maxA + maxB + maxD));
+
+// //   return {
+// //     maxA,
+// //     maxB,
+// //     maxC,
+// //     maxD,
+// //     total,
+// //   };
+// // };
+
+// // // ============================================================================
+// // // DÉTECTION DES DOCUMENTS ET DES VŒUX MOODLE
+// // // ============================================================================
+
+// // export const getDocumentPublicUrl = (path) => {
+// //   if (!path) return null;
+// //   const { data } = supabase.storage.from('documents').getPublicUrl(path);
+// //   return `${data.publicUrl}?t=${Date.now()}`;
+// // };
+
+// // export const uploadDocument = async (etudiant_id, file, type = 'cv') => {
+// //   if (!file) throw new Error('Aucun fichier sélectionné.');
+// //   if (file.size > 5 * 1024 * 1024) throw new Error('Le fichier dépasse 5 Mo.');
+  
+// //   const storagePath = `${type}/${etudiant_id}.pdf`;
+// //   const { error: uploadErr } = await supabase.storage
+// //     .from('documents')
+// //     .upload(storagePath, file, {
+// //       contentType: 'application/pdf',
+// //       upsert: true,
+// //     });
+// //   if (uploadErr) throw uploadErr;
+
+// //   const updatePayload = type === 'cv' ? { cv_path: storagePath } : { lm_path: storagePath };
+// //   const { error: dbErr } = await supabase
+// //     .from('etudiants')
+// //     .update(updatePayload)
+// //     .eq('id', etudiant_id);
+// //   if (dbErr) throw dbErr;
+
+// //   return storagePath;
+// // };
+
+// // export const cleanTextForMatching = (str) => {
+// //   return (str || '')
+// //     .normalize('NFD')
+// //     .replace(/[\u0300-\u036f]/g, '')
+// //     .toLowerCase()
+// //     .replace(/(\.pdf|_cv|_lm|cv|lm)/gi, '')
+// //     .replace(/[^a-z0-9]/g, '');
+// // };
+
+// // // Retrouver l'étudiant correspondant au nom d'un sous-dossier ou d'un fichier
+// // export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
+// //   if (!filePathOrName || !etudiantsList || etudiantsList.length === 0) return null;
+
+// //   let target = filePathOrName;
+// //   if (filePathOrName.includes('/')) {
+// //     const parts = filePathOrName.split('/').filter(Boolean);
+// //     if (parts.length >= 2) target = parts[parts.length - 2];
+// //   } else if (filePathOrName.includes('\\')) {
+// //     const parts = filePathOrName.split('\\').filter(Boolean);
+// //     if (parts.length >= 2) target = parts[parts.length - 2];
+// //   }
+
+// //   const cleanedTarget = cleanTextForMatching(target);
+// //   if (!cleanedTarget) return null;
+
+// //   return etudiantsList.find((e) => {
+// //     const nom = cleanTextForMatching(e.nom);
+// //     const prenom = cleanTextForMatching(e.prenom);
+// //     const nomPrenom = `${nom}${prenom}`;
+// //     const prenomNom = `${prenom}${nom}`;
+// //     const emailPrefix = cleanTextForMatching(e.adresse_email?.split('@')[0]);
+
+// //     return (
+// //       (nom && prenom && (cleanedTarget.includes(nomPrenom) || cleanedTarget.includes(prenomNom))) ||
+// //       (nomPrenom && nomPrenom.includes(cleanedTarget)) ||
+// //       (prenomNom && prenomNom.includes(cleanedTarget)) ||
+// //       (emailPrefix && (cleanedTarget.includes(emailPrefix) || emailPrefix.includes(cleanedTarget)))
+// //     );
+// //   }) || null;
+// // };
+
+// // // Extraire le chef de projet depuis un texte de vœu Moodle (ex: "Conception... [M. BONNAL]")
+// // // export const findChefFromWishText = (wishText, chefsList) => {
+// // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
+
+// // //   const raw = String(wishText).trim();
+
+// // //   // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
+// // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
+// // //   const target = bracketMatch ? bracketMatch[1] : raw;
+
+// // //   const cleanedTarget = cleanTextForMatching(target);
+// // //   if (!cleanedTarget) return null;
+
+// // //   // 2. Correspondance par nom de famille du chef
+// // //   const found = chefsList.find((c) => {
+// // //     const nomComplet = cleanTextForMatching(c.nom);
+// // //     const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
+// // //     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || ''); // ex: "bonnal", "guettari"
+
+// // //     return (
+// // //       (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
+// // //       (nomDeFamille && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget)))
+// // //     );
+// // //   });
+
+// // //   if (found) return found;
+
+// // //   // 3. Fallback : correspondance par spécialité du projet
+// // //   return chefsList.find((c) => {
+// // //     const spec = cleanTextForMatching(c.specialite);
+// // //     return spec && cleanTextForMatching(raw).includes(spec);
+// // //   }) || null;
+// // // };
+
+
+// // // // Décodage HTML et nettoyage robuste pour Moodle
+// // // export const decodeHtmlEntities = (str) => {
+// // //   return (str || '')
+// // //     .replace(/&#039;/g, "'")
+// // //     .replace(/&amp;/g, '&')
+// // //     .replace(/&quot;/g, '"')
+// // //     .replace(/&lt;/g, '<')
+// // //     .replace(/&gt;/g, '>');
+// // // };
+
+// // // export const findChefFromWishText = (wishText, chefsList) => {
+// // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
+
+// // //   const raw = decodeHtmlEntities(String(wishText)).trim();
+
+// // //   // 1. Détection prioritaire du texte entre crochets [M. BONNAL] ou [T. GUETTARI]
+// // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
+// // //   const target = bracketMatch ? bracketMatch[1] : raw;
+
+// // //   const cleanedTarget = cleanTextForMatching(target);
+// // //   if (!cleanedTarget) return null;
+
+// // //   // 2. Correspondance par nom de famille du chef
+// // //   const found = chefsList.find((c) => {
+// // //     const nomComplet = cleanTextForMatching(c.nom);
+// // //     const parts = c.nom.toLowerCase().split(/\s+/).filter(Boolean);
+// // //     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || '');
+
+// // //     return (
+// // //       (nomComplet && (cleanedTarget.includes(nomComplet) || nomComplet.includes(cleanedTarget))) ||
+// // //       (nomDeFamille && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget)))
+// // //     );
+// // //   });
+
+// // //   if (found) return found;
+
+// // //   // 3. Fallback : correspondance par spécialité
+// // //   return chefsList.find((c) => {
+// // //     const spec = cleanTextForMatching(c.specialite);
+// // //     return spec && cleanTextForMatching(raw).includes(spec);
+// // //   }) || null;
+// // // };
+
+// // // Décodage HTML et nettoyage robuste pour Moodle
+// // // export const decodeHtmlEntities = (str) => {
+// // //   return (str || '')
+// // //     .replace(/&#039;/g, "'")
+// // //     .replace(/&amp;/g, '&')
+// // //     .replace(/&quot;/g, '"')
+// // //     .replace(/&lt;/g, '<')
+// // //     .replace(/&gt;/g, '>')
+// // //     .replace(/Ã©/gi, 'e')
+// // //     .replace(/Ã¨/gi, 'e')
+// // //     .replace(/Ã/gi, 'a');
+// // // };
+
+// // // export const findChefFromWishText = (wishText, chefsList) => {
+// // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
+
+// // //   const raw = decodeHtmlEntities(String(wishText)).trim();
+
+// // //   // 1. Détection du texte entre crochets [M. BONNAL], [O. QUENARD], [S. LOUIS]
+// // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
+// // //   const target = bracketMatch ? bracketMatch[1] : raw;
+
+// // //   const cleanedTarget = cleanTextForMatching(
+// // //     decodeHtmlEntities(target)
+// // //   );
+// // //   if (!cleanedTarget) return null;
+
+// // //   // Cas spécifique 1 : [S. LOUIS] correspond à Louis SAGE
+// // //   if (cleanedTarget.includes('louis') || cleanedTarget.includes('slouis')) {
+// // //     const sageChef = chefsList.find((c) => {
+// // //       const nom = cleanTextForMatching(decodeHtmlEntities(c.nom));
+// // //       return nom.includes('sage') || nom.includes('louis');
+// // //     });
+// // //     if (sageChef) return sageChef;
+// // //   }
+
+// // //   // Cas spécifique 2 : [O. QUENARD] correspond à Olivier Quénard
+// // //   if (cleanedTarget.includes('quenard') || cleanedTarget.includes('quanard')) {
+// // //     const quenardChef = chefsList.find((c) => {
+// // //       const nom = cleanTextForMatching(decodeHtmlEntities(c.nom));
+// // //       return nom.includes('quenard') || nom.includes('quanard');
+// // //     });
+// // //     if (quenardChef) return quenardChef;
+// // //   }
+
+// // //   // 2. Correspondance générale (Nom complet, Nom de famille ou Prénom)
+// // //   const found = chefsList.find((c) => {
+// // //     const nomClean = cleanTextForMatching(decodeHtmlEntities(c.nom));
+// // //     const parts = decodeHtmlEntities(c.nom).toLowerCase().split(/\s+/).filter(Boolean);
+// // //     const nomDeFamille = cleanTextForMatching(parts[parts.length - 1] || '');
+// // //     const prenom = cleanTextForMatching(parts[0] || '');
+
+// // //     return (
+// // //       (nomClean && (cleanedTarget.includes(nomClean) || nomClean.includes(cleanedTarget))) ||
+// // //       (nomDeFamille && nomDeFamille.length >= 3 && (cleanedTarget.includes(nomDeFamille) || nomDeFamille.includes(cleanedTarget))) ||
+// // //       (prenom && prenom.length >= 4 && cleanedTarget.includes(prenom))
+// // //     );
+// // //   });
+
+// // //   if (found) return found;
+
+// // //   // 3. Fallback par spécialité
+// // //   return chefsList.find((c) => {
+// // //     const spec = cleanTextForMatching(decodeHtmlEntities(c.specialite || ''));
+// // //     return spec && spec.length >= 4 && cleanTextForMatching(raw).includes(spec);
+// // //   }) || null;
+// // // };
+
+
+// // // // Décodage HTML et nettoyage robuste pour Moodle
+// // // export const decodeHtmlEntities = (str) => {
+// // //   return (str || '')
+// // //     .replace(/&#039;/g, "'")
+// // //     .replace(/&amp;/g, '&')
+// // //     .replace(/&quot;/g, '"')
+// // //     .replace(/&lt;/g, '<')
+// // //     .replace(/&gt;/g, '>');
+// // // };
+
+// // // export const findChefFromWishText = (wishText, chefsList) => {
+// // //   if (!wishText || !chefsList || chefsList.length === 0) return null;
+
+// // //   const raw = decodeHtmlEntities(String(wishText)).toLowerCase().trim();
+
+// // //   // 1. DÉTECTION DIRECTE PAR PROJET OU PAR CHEF (100% GARANTI) :
+
+// // //   // Olivier Quénard (QUEN / QUÃ©) : Matériaux / Caractérisation / [O. QUENARD]
+// // //   if (raw.includes('quenard') || raw.includes('quénard') || raw.includes('quã') || raw.includes('matériaux') || raw.includes('materiaux')) {
+// // //     const c = chefsList.find((ch) => {
+// // //       const n = ch.nom.toLowerCase();
+// // //       return n.startsWith('qu') || n.includes('quenard') || n.includes('quã');
+// // //     });
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Louis Sage (SAGE) : Traitement d'images / Informatique industrielle / [S. LOUIS]
+// // //   if (raw.includes('louis') || raw.includes('sage') || raw.includes('traitement') || raw.includes('image')) {
+// // //     const c = chefsList.find((ch) => {
+// // //       const n = ch.nom.toLowerCase();
+// // //       return n.startsWith('sag') || n.includes('sage') || n.includes('louis');
+// // //     });
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Stéphane D'Attanasio (DATT) : Interactions humain-machine / [S. D'ATTANASIO]
+// // //   if (raw.includes('attanasio') || raw.includes('humain-robot') || raw.includes('interdisciplina')) {
+// // //     const c = chefsList.find((ch) => {
+// // //       const n = ch.nom.toLowerCase();
+// // //       return n.includes('attanasio') || n.startsWith('datt') || n.includes("d'att");
+// // //     });
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Marc Bonnal (BONN) : ERP / Organisation industrielle / [M. BONNAL]
+// // //   if (raw.includes('bonnal') || raw.includes('erp') || raw.includes('organisation industrielle')) {
+// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bonnal') || ch.nom.toLowerCase().startsWith('bonn'));
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Allal Bouzid (BOUZ) : Smart Grid / [A. Bouzid]
+// // //   if (raw.includes('bouzid') || raw.includes('smart grid')) {
+// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bouzid') || ch.nom.toLowerCase().startsWith('bouz'));
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Sébastien Corveleyn (CORV) : Calculs / Dimensionnement / [S. CORVELEYN]
+// // //   if (raw.includes('corveleyn') || raw.includes('dimensionnement')) {
+// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('corveleyn') || ch.nom.toLowerCase().startsWith('corv'));
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Damien Deroland (DERO) : Cobotique / [D. DEROLAND]
+// // //   if (raw.includes('deroland') || raw.includes('cobotique')) {
+// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('deroland') || ch.nom.toLowerCase().startsWith('dero'));
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Jean-Pierre Fradin (FRAD) : Thermique / Electronique de puissance / [J.P. FRADIN]
+// // //   if (raw.includes('fradin') || raw.includes('thermique') || raw.includes('puissance')) {
+// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('fradin') || ch.nom.toLowerCase().startsWith('frad'));
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Toufik Guettari (GUET) : Data Science / Vision / IA / [T. GUETTARI]
+// // //   if (raw.includes('guettari') || raw.includes('data science') || raw.includes('applis web')) {
+// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('guettari') || ch.nom.toLowerCase().startsWith('guet'));
+// // //     if (c) return c;
+// // //   }
+
+// // //   // Eric Loupiac (LOUP) : Machines Spéciales / [E. LOUPIAC]
+// // //   if (raw.includes('loupiac') || raw.includes('machines spéciales') || raw.includes('machines speciales')) {
+// // //     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('loupiac') || ch.nom.toLowerCase().startsWith('loup'));
+// // //     if (c) return c;
+// // //   }
+
+// // //   // 2. CORRESPONDANCE GÉNÉRIQUE SI AUTRE FORMAT
+// // //   const bracketMatch = raw.match(/\[([^\]]+)\]/);
+// // //   const target = bracketMatch ? bracketMatch[1] : raw;
+// // //   const cleanedTarget = cleanTextForMatching(target);
+
+// // //   return chefsList.find((c) => {
+// // //     const nomClean = cleanTextForMatching(c.nom);
+// // //     return nomClean && (cleanedTarget.includes(nomClean) || nomClean.includes(cleanedTarget));
+// // //   }) || null;
+// // // };
+
+// // // export const uploadBatchDocuments = async (items, type = 'cv', onProgress = null) => {
+// // //   if (!items || items.length === 0) return { success: 0, errors: [] };
+
+// // //   let successCount = 0;
+// // //   const errors = [];
+
+// // //   for (let i = 0; i < items.length; i++) {
+// // //     const { file, etudiant_id } = items[i];
+// // //     try {
+// // //       await uploadDocument(etudiant_id, file, type);
+// // //       successCount++;
+// // //     } catch (err) {
+// // //       errors.push({ file: file.name, error: err.message });
+// // //     }
+// // //     if (onProgress) {
+// // //       onProgress(i + 1, items.length);
+// // //     }
+// // //   }
+
+// // //   return { success: successCount, total: items.length, errors };
+// // // };
+
+// // // // ===== Chefs de projet =====
+// // // export const fetchChefsDeProjet = async () => {
+// // //   const { data, error } = await supabase.from('chefs_de_projet').select('*').order('nom');
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // // ===== Étudiants =====
+// // // export const fetchEtudiants = async () => {
+// // //   const { data, error } = await supabase.from('etudiants').select('*').order('nom');
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const upsertEtudiant = async (etudiant) => {
+// // //   const { data, error } = await supabase
+// // //     .from('etudiants')
+// // //     .upsert(etudiant, { onConflict: 'adresse_email' })
+// // //     .select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // // ===== Aptitudes & Appétences =====
+// // // export const fetchAptitudesByEtudiant = async (etudiant_id) => {
+// // //   const { data, error } = await supabase
+// // //     .from('aptitudes')
+// // //     .select('*')
+// // //     .eq('etudiant_id', etudiant_id)
+// // //     .maybeSingle();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const fetchApetencesByEtudiant = async (etudiant_id) => {
+// // //   const { data, error } = await supabase
+// // //     .from('apetences')
+// // //     .select('*')
+// // //     .eq('etudiant_id', etudiant_id)
+// // //     .maybeSingle();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const fetchAllApetences = async () => {
+// // //   const { data, error } = await supabase.from('apetences').select('*');
+// // //   if (error) throw error;
+// // //   return data || [];
+// // // };
+
+// // // // ===== Sélections / Vœux avec Priorité (1er, 2e, 3e choix) =====
+// // // export const fetchSelections = async () => {
+// // //   const { data, error } = await supabase.from('selections').select(`
+// // //     id, etudiant_id, chef_de_projet_id, priorite,
+// // //     etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path ),
+// // //     chefs_de_projet ( id, nom, specialite, email )
+// // //   `);
+// // //   if (error) throw error;
+// // //   return data.map((s) => ({
+// // //     id: s.id,
+// // //     etudiant: s.etudiants?.adresse_email,
+// // //     chefDeProjet: s.chefs_de_projet?.nom,
+// // //     etudiant_id: s.etudiant_id,
+// // //     chef_de_projet_id: s.chef_de_projet_id,
+// // //     priorite: s.priorite || 1,
+// // //   }));
+// // // };
+
+// // // export const saveSelection = async (etudiant_id, chef_de_projet_id, priorite = 1) => {
+// // //   const { data, error } = await supabase
+// // //     .from('selections')
+// // //     .upsert(
+// // //       { etudiant_id, chef_de_projet_id, priorite: Number(priorite) || 1 },
+// // //       { onConflict: 'etudiant_id,chef_de_projet_id' }
+// // //     )
+// // //     .select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const deleteSelection = async (etudiant_id, chef_de_projet_id) => {
+// // //   const { data, error } = await supabase
+// // //     .from('selections')
+// // //     .delete()
+// // //     .match({ etudiant_id, chef_de_projet_id });
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // // ===== Disponibilités =====
+// // // export const fetchDisponibiliteChef = async (chef_de_projet_id, date) => {
+// // //   const { data, error } = await supabase
+// // //     .from('disponibilite_binaire_chefprojet')
+// // //     .select('*')
+// // //     .match({ chef_de_projet_id, date })
+// // //     .maybeSingle();
+// // //   if (error) throw error;
+// // //   return data || { chef_de_projet_id, date, ...emptySlots() };
+// // // };
+
+// // // export const saveDisponibiliteChef = async (chef_de_projet_id, date, slots) => {
+// // //   const slotPayload = normalizeSlots(slots);
+// // //   const { data, error } = await supabase
+// // //     .from('disponibilite_binaire_chefprojet')
+// // //     .upsert({ chef_de_projet_id, date, ...slotPayload }, { onConflict: 'chef_de_projet_id,date' })
+// // //     .select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const fetchDisponibiliteEtudiant = async (etudiant_id, date) => {
+// // //   const { data, error } = await supabase
+// // //     .from('disponibilite_binaire_etudiant')
+// // //     .select('*')
+// // //     .match({ etudiant_id, date })
+// // //     .maybeSingle();
+// // //   if (error) throw error;
+// // //   return data || { etudiant_id, date, ...emptySlots() };
+// // // };
+
+// // // export const saveDisponibiliteEtudiant = async (etudiant_id, date, slots) => {
+// // //   const slotPayload = normalizeSlots(slots);
+// // //   const { data, error } = await supabase
+// // //     .from('disponibilite_binaire_etudiant')
+// // //     .upsert({ etudiant_id, date, ...slotPayload }, { onConflict: 'etudiant_id,date' })
+// // //     .select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // // ===== Rendez-vous =====
+// // // export const fetchRendezVous = async (date = null) => {
+// // //   let query = supabase
+// // //     .from('rendez_vous')
+// // //     .select(
+// // //       `
+// // //       id, date, heure, heure_fin, chef_de_projet_id, etudiant_id,
+// // //       chefs_de_projet ( id, nom ),
+// // //       etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path )
+// // //     `
+// // //     )
+// // //     .order('heure', { ascending: true });
+
+// // //   if (date) query = query.eq('date', date);
+
+// // //   const { data, error } = await query;
+// // //   if (error) throw error;
+
+// // //   return data.map((r) => ({
+// // //     id: r.id,
+// // //     date: r.date,
+// // //     heure_debut: r.heure?.slice(0, 5) || '',
+// // //     heure_fin: r.heure_fin?.slice(0, 5) || '',
+// // //     chef_de_projet_id: r.chef_de_projet_id,
+// // //     etudiant_id: r.etudiant_id || r.etudiants?.id,
+// // //     chef_de_projet: r.chefs_de_projet?.nom,
+// // //     etudiant: `${r.etudiants?.nom || ''} ${r.etudiants?.prenom || ''}`.trim(),
+// // //     email_etudiant: r.etudiants?.adresse_email,
+// // //     cv_path: r.etudiants?.cv_path,
+// // //     lm_path: r.etudiants?.lm_path,
+// // //   }));
+// // // };
+
+// // // export const genererRendezVous = async (dateDebut, dateFin, token) => {
+// // //   const response = await fetch(`${supabaseUrl}/functions/v1/generer-rendez-vous`, {
+// // //     method: 'POST',
+// // //     headers: {
+// // //       'Content-Type': 'application/json',
+// // //       Authorization: `Bearer ${token}`,
+// // //     },
+// // //     body: JSON.stringify({ date_debut: dateDebut, date_fin: dateFin }),
+// // //   });
+
+// // //   if (!response.ok) {
+// // //     const err = await response.json().catch(() => ({}));
+// // //     throw new Error(err.error || `Erreur serveur: ${response.status}`);
+// // //   }
+// // //   return await response.json();
+// // // };
+
+// // // // ===== Évaluations =====
+// // // export const fetchEvaluations = async () => {
+// // //   const { data, error } = await supabase.from('evaluations').select(`
+// // //     id, note, commentaire, chef_de_projet_id, etudiant_id,
+// // //     etudiants ( nom, prenom, adresse_email ),
+// // //     chefs_de_projet ( nom )
+// // //   `);
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const saveEvaluation = async (chef_de_projet_id, etudiant_id, note, commentaire = '') => {
+// // //   const { data, error } = await supabase
+// // //     .from('evaluations')
+// // //     .upsert(
+// // //       { chef_de_projet_id, etudiant_id, note, commentaire },
+// // //       { onConflict: 'chef_de_projet_id,etudiant_id' }
+// // //     )
+// // //     .select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // // ===== Affectations finales =====
+// // // export const fetchAffectations = async () => {
+// // //   const { data, error } = await supabase.from('affectation').select(`
+// // //     id, chef_de_projet_id, etudiant_id,
+// // //     etudiants ( id, nom, prenom, adresse_email, parcours ),
+// // //     chefs_de_projet ( id, nom, specialite, email )
+// // //   `);
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const saveAffectation = async (chef_de_projet_id, etudiant_id) => {
+// // //   const { data, error } = await supabase
+// // //     .from('affectation')
+// // //     .upsert({ chef_de_projet_id, etudiant_id }, { onConflict: 'etudiant_id' })
+// // //     .select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const deleteAffectation = async (etudiant_id) => {
+// // //   const { data, error } = await supabase
+// // //     .from('affectation')
+// // //     .delete()
+// // //     .eq('etudiant_id', etudiant_id);
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // // ===== Imports en Masse =====
+// // // export const importChefsDeProjet = async (rows) => {
+// // //   const { data, error } = await supabase.from('chefs_de_projet').upsert(rows, { onConflict: 'email' }).select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const importEtudiants = async (rows) => {
+// // //   const { data, error } = await supabase.from('etudiants').upsert(rows, { onConflict: 'adresse_email' }).select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const importAptitudes = async (rows) => {
+// // //   const etudiants = await fetchEtudiants();
+// // //   const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
+
+// // //   const payload = rows
+// // //     .map((r) => {
+// // //       const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
+// // //       if (!etudiant_id) return null;
+// // //       const { adresse_email, ...rest } = r;
+// // //       return { etudiant_id, ...rest };
+// // //     })
+// // //     .filter(Boolean);
+
+// // //   const { data, error } = await supabase.from('aptitudes').upsert(payload, { onConflict: 'etudiant_id' }).select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // export const importApetences = async (rows) => {
+// // //   const etudiants = await fetchEtudiants();
+// // //   const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
+
+// // //   const payload = rows
+// // //     .map((r) => {
+// // //       const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
+// // //       if (!etudiant_id) return null;
+// // //       const { adresse_email, ...rest } = r;
+// // //       return { etudiant_id, ...rest };
+// // //     })
+// // //     .filter(Boolean);
+
+// // //   const { data, error } = await supabase.from('apetences').upsert(payload, { onConflict: 'etudiant_id' }).select();
+// // //   if (error) throw error;
+// // //   return data;
+// // // };
+
+// // // // ===== FONCTIONS DE REMISE À ZÉRO CIBLÉES (Admin) =====
+
+// // // export const resetAllSelections = async () => {
+// // //   const { error } = await supabase.from('selections').delete().neq('id', 0);
+// // //   if (error) throw error;
+// // // };
+
+// // // export const resetAllRendezVous = async (dateDebut = null, dateFin = null) => {
+// // //   let query = supabase.from('rendez_vous').delete();
+// // //   if (dateDebut && dateFin) {
+// // //     query = query.gte('date', dateDebut).lte('date', dateFin);
+// // //   } else {
+// // //     query = query.neq('id', 0);
+// // //   }
+// // //   const { error } = await query;
+// // //   if (error) throw error;
+// // // };
+
+// // // export const resetAllEvaluations = async () => {
+// // //   const { error } = await supabase.from('evaluations').delete().neq('id', 0);
+// // //   if (error) throw error;
+// // // };
+
+// // // export const resetAllAffectations = async () => {
+// // //   const { error } = await supabase.from('affectation').delete().neq('id', 0);
+// // //   if (error) throw error;
+// // // };
+
+// // // export const resetAllDisponibilites = async (cible = 'all', date = null) => {
+// // //   if (cible === 'chefs' || cible === 'all') {
+// // //     let q = supabase.from('disponibilite_binaire_chefprojet').delete();
+// // //     if (date) q = q.eq('date', date);
+// // //     else q = q.neq('id', 0);
+// // //     const { error } = await q;
+// // //     if (error) throw error;
+// // //   }
+// // //   if (cible === 'etudiants' || cible === 'all') {
+// // //     let q = supabase.from('disponibilite_binaire_etudiant').delete();
+// // //     if (date) q = q.eq('date', date);
+// // //     else q = q.neq('id', 0);
+// // //     const { error } = await q;
+// // //     if (error) throw error;
+// // //   }
+// // // };
+
+// // // export const deleteSingleDocument = async (etudiant_id, type = 'cv') => {
+// // //   const filePath = `${type}/${etudiant_id}.pdf`;
+// // //   await supabase.storage.from('documents').remove([filePath]);
+// // //   const updatePayload = type === 'cv' ? { cv_path: null } : { lm_path: null };
+// // //   const { error } = await supabase.from('etudiants').update(updatePayload).eq('id', etudiant_id);
+// // //   if (error) throw error;
+// // // };
+
+// // // export const purgeAllDocuments = async () => {
+// // //   const { data: cvFiles } = await supabase.storage.from('documents').list('cv');
+// // //   if (cvFiles && cvFiles.length > 0) {
+// // //     await supabase.storage.from('documents').remove(cvFiles.map((f) => `cv/${f.name}`));
+// // //   }
+
+// // //   const { data: lmFiles } = await supabase.storage.from('documents').list('lm');
+// // //   if (lmFiles && lmFiles.length > 0) {
+// // //     await supabase.storage.from('documents').remove(lmFiles.map((f) => `lm/${f.name}`));
+// // //   }
+
+// // //   const { error } = await supabase.from('etudiants').update({ cv_path: null, lm_path: null }).neq('id', 0);
+// // //   if (error) throw error;
+// // // };
+
+// // // export const resetEntireDatabaseAndStorage = async () => {
+// // //   try {
+// // //     await purgeAllDocuments();
+// // //   } catch (err) {
+// // //     console.warn('Storage déjà vide ou erreur purge:', err);
 // // //   }
 
 // // //   const { data, error } = await supabase.rpc('reset_all_campaign_data');
@@ -6448,7 +5584,7 @@
 // // };
 
 // // // ============================================================================
-// // // DETECTION DES DOCUMENTS ET DES VOEUX MOODLE
+// // // DÉTECTION DES DOCUMENTS ET DES VŒUX MOODLE
 // // // ============================================================================
 
 // // export const getDocumentPublicUrl = (path) => {
@@ -6458,8 +5594,8 @@
 // // };
 
 // // export const uploadDocument = async (etudiant_id, file, type = 'cv') => {
-// //   if (!file) throw new Error('Aucun fichier selectionne.');
-// //   if (file.size > 5 * 1024 * 1024) throw new Error('Le fichier depasse 5 Mo.');
+// //   if (!file) throw new Error('Aucun fichier sélectionné.');
+// //   if (file.size > 5 * 1024 * 1024) throw new Error('Le fichier dépasse 5 Mo.');
 
 // //   const storagePath = `${type}/${etudiant_id}.pdf`;
 // //   const { error: uploadErr } = await supabase.storage
@@ -6689,7 +5825,7 @@
 // // };
 
 // // // ============================================================================
-// // // VOEUX COMPLETS DES ETUDIANTS (Rangs 1 a 10 pour Affectation)
+// // // NOUVEAU : VOEUX COMPLETS DES ETUDIANTS (Rangs 1 a 10 pour Affectation)
 // // // ============================================================================
 
 // // export const fetchAllEtudiantVoeux = async () => {
@@ -7292,8 +6428,7 @@
 //   const pctB = Number(percentages.pourcentage_b ?? 25) / 100;
 //   const pctD = Number(percentages.pourcentage_d ?? 25) / 100;
 
-//   // Arrondi strict au superieur pour la note A (ex: 2.3 => 3)
-//   let maxA = Math.ceil(total * pctA);
+//   let maxA = Math.round(total * pctA);
 //   let maxB = Math.round(total * pctB);
 //   let maxD = Math.round(total * pctD);
 
@@ -7384,15 +6519,6 @@
 //     );
 //   }) || null;
 // };
-
-// // export const decodeHtmlEntities = (str) => {
-// //   return (str || '')
-// //     .replace(/&#039;/g, "'")
-// //     .replace(/&amp;/g, '&')
-// //     .replace(/&quot;/g, '"')
-// //     .replace(/&lt;/g, '<')
-// //     .replace(/&gt;/g, '>');
-// // };
 
 // export const decodeHtmlEntities = (str) => {
 //   return (str || '')
@@ -7629,18 +6755,6 @@
 //     .from('selections')
 //     .delete()
 //     .match({ etudiant_id, chef_de_projet_id });
-//   if (error) throw error;
-//   return data;
-// };
-
-// // ============================================================================
-// // INJECTION TRANSACTIONNELLE PAR RPC (Garantie atomique Tout-ou-Rien)
-// // ============================================================================
-
-// export const importVoeuxTransaction = async (cleanPayload) => {
-//   const { data, error } = await supabase.rpc('import_voeux_transaction', {
-//     payload: cleanPayload,
-//   });
 //   if (error) throw error;
 //   return data;
 // };
@@ -7962,704 +7076,888 @@
 //   }
 // };
 
-import * as XLSX from 'xlsx';
-import { decodeHtmlEntities, findChefFromWishText, cleanTextForMatching, findEtudiantForDocument } from './supabase';
+import { createClient } from '@supabase/supabase-js';
 
-// Nettoyage d une cellule texte (espaces, retours a la ligne, caracteres invisibles, BOM, entites HTML)
-export const cleanCellString = (val) => {
-  if (val === null || val === undefined) return '';
-  return decodeHtmlEntities(String(val))
-    .replace(/^\uFEFF/, '')
-    .replace(/\u00A0/g, ' ')
-    .replace(/[\r\n]+/g, ' ')
-    .trim();
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+const emptySlots = () =>
+  Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`slot${i + 1}`, '0']));
+
+const normalizeSlots = (slots) => {
+  if (Array.isArray(slots)) {
+    const obj = {};
+    for (let i = 0; i < 40; i++) {
+      obj[`slot${i + 1}`] = String(slots[i] ?? '0');
+    }
+    return obj;
+  }
+  return slots;
 };
 
-const MOJIBAKE_PATTERNS = [
-  'Ã©', 'Ã¨', 'Ã ', 'Ãª', 'Ã§', 'Ã®', 'Ã´', 'Ã¹', 'Ã»', 'Ã¢', 'Ã«', 'Ã¯', 'Ã¼', 'Ã¶', 'Ã¤', 'Â', 'â€™', '\uFFFD'
+// ============================================================================
+// REFERENTIEL DYNAMIQUE DES COMPETENCES (Parametrable par Promotion)
+// ============================================================================
+
+export const DEFAULT_COMPETENCES = [
+  { code: 'calculs_simulation_numerique', label: 'Calculs & Simulation', ordre: 1, actif: true },
+  { code: 'essais_caracterisation', label: 'Essais & Caracterisation', ordre: 2, actif: true },
+  { code: 'fabrication_prototypage', label: 'Fabrication & Proto', ordre: 3, actif: true },
+  { code: 'conception_mecanique', label: 'Conception Meca', ordre: 4, actif: true },
+  { code: 'automatique_automatisme', label: 'Automatique', ordre: 5, actif: true },
+  { code: 'iot_systeme_embarque', label: 'IOT & Embarque', ordre: 6, actif: true },
+  { code: 'robot_cobot', label: 'Robot & Cobot', ordre: 7, actif: true },
+  { code: 'vision', label: 'Vision Industrielle', ordre: 8, actif: true },
+  { code: 'ia', label: 'Intelligence Artificielle', ordre: 9, actif: true },
+  { code: 'ihm_appli_web_mobile', label: 'IHM & App Web/Mobile', ordre: 10, actif: true },
+  { code: 'ethique_ergonomie', label: 'Ethique & Ergonomie', ordre: 11, actif: true },
 ];
 
-// Detection des caracteres speciaux ou mal encodes (mojibake UTF-8 / Windows-1252)
-export const hasCorruptedEncoding = (str) => {
-  if (!str) return false;
-  return MOJIBAKE_PATTERNS.some((pattern) => str.includes(pattern));
+export const fetchReferentielCompetences = async (onlyActive = true) => {
+  let query = supabase.from('referentiel_competences').select('*').order('ordre', { ascending: true });
+  if (onlyActive) query = query.eq('actif', true);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  if (!data || data.length === 0) {
+    return DEFAULT_COMPETENCES.map((c, idx) => ({ id: idx + 1, ...c }));
+  }
+  return data;
 };
 
-// Reparation automatique proposee en suggestion de correction
-export const autoRepairMojibake = (str) => {
-  if (!str) return '';
-  return str
-    .replaceAll('Ã©', 'e')
-    .replaceAll('Ã¨', 'e')
-    .replaceAll('Ã ', 'a')
-    .replaceAll('Ãª', 'e')
-    .replaceAll('Ã§', 'c')
-    .replaceAll('Ã®', 'i')
-    .replaceAll('Ã´', 'o')
-    .replaceAll('Ã¹', 'u')
-    .replaceAll('Ã»', 'u')
-    .replaceAll('Ã¢', 'a')
-    .replaceAll('Ã«', 'e')
-    .replaceAll('Ã¯', 'i')
-    .replaceAll('â€™', "'")
-    .replaceAll('Â', '')
-    .replaceAll('\uFFFD', '');
+export const saveReferentielCompetence = async (competence) => {
+  const payload = {
+    code: competence.code.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+    label: competence.label.trim(),
+    description: competence.description?.trim() || '',
+    ordre: Number(competence.ordre || 1),
+    actif: competence.actif !== undefined ? competence.actif : true,
+  };
+  if (competence.id) payload.id = competence.id;
+
+  const { data, error } = await supabase
+    .from('referentiel_competences')
+    .upsert(payload, { onConflict: 'code' })
+    .select();
+  if (error) throw error;
+  return data;
 };
 
-// Validation du format d adresse email
-export const isValidEmail = (email) => {
-  if (!email) return false;
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(String(email).toLowerCase().trim());
+export const deleteReferentielCompetence = async (id) => {
+  const { data, error } = await supabase
+    .from('referentiel_competences')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+  return data;
 };
 
-// Selection intelligente de l onglet pertinent dans un classeur Excel
-export const findBestSheetName = (workbook, targetKeywords = []) => {
-  if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
-    return null;
-  }
-
-  if (workbook.SheetNames.length === 1) {
-    return workbook.SheetNames[0];
-  }
-
-  for (const name of workbook.SheetNames) {
-    const sheet = workbook.Sheets[name];
-    if (!sheet) continue;
-    const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-    if (!json || json.length === 0) continue;
-
-    const firstRowStr = (json[0] || []).map((c) => String(c).toLowerCase()).join(' ');
-    const matches = targetKeywords.some((kw) => firstRowStr.includes(kw.toLowerCase()));
-    if (matches) {
-      return name;
-    }
-  }
-
-  return workbook.SheetNames[0];
+export const resetReferentielToDefaults = async () => {
+  const { data, error } = await supabase
+    .from('referentiel_competences')
+    .upsert(DEFAULT_COMPETENCES, { onConflict: 'code' })
+    .select();
+  if (error) throw error;
+  return data;
 };
 
-// ============================================================================
-// 1. VALIDATION DES CHEFS DE PROJET
-// ============================================================================
-export const validateChefsData = (rows) => {
-  const anomalies = [];
-  const validRows = [];
-  const seenEmails = new Set();
+export const fetchDynamicScoresByEtudiant = async (etudiant_id) => {
+  const { data, error } = await supabase
+    .from('etudiant_competences')
+    .select(`
+      competence_id, score_aptitude, score_appetence,
+      referentiel_competences ( id, code, label, ordre, actif )
+    `)
+    .eq('etudiant_id', etudiant_id);
+  if (error) throw error;
 
-  if (!rows || rows.length < 2) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier est vide ou ne contient pas de donnees.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
-
-  const dataRows = rows.slice(1);
-
-  dataRows.forEach((r, idx) => {
-    const ligneNum = idx + 2;
-    const rowIndex = idx + 1;
-    const nom = cleanCellString(r[0]);
-    const specialite = cleanCellString(r[1]);
-    const email = cleanCellString(r[2]).toLowerCase();
-    const rawCreneaux = parseInt(cleanCellString(r[3]), 10);
-    const creneaux = !isNaN(rawCreneaux) && rawCreneaux > 0 ? rawCreneaux : 15;
-
-    if (!nom && !specialite && !email) {
-      return;
-    }
-
-    let isRowBlocked = false;
-
-    if (!nom) {
-      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'nom', message: 'Le nom du chef de projet est obligatoire.', rawRow: r });
-      isRowBlocked = true;
-    } else if (hasCorruptedEncoding(nom)) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'nom',
-        message: `Caractere mal encode detecte dans le nom "${nom}". Suggestion : "${autoRepairMojibake(nom)}".`,
-        rawRow: r,
-      });
-    }
-
-    if (!specialite) {
-      anomalies.push({ ligne: ligneNum, rowIndex, type: 'AVERTISSEMENT', champ: 'specialite', message: 'Specialite non renseignee. La valeur "Generaliste" sera attribuee.', rawRow: r });
-    } else if (hasCorruptedEncoding(specialite)) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'specialite',
-        message: `Caractere mal encode detecte dans la specialite "${specialite}". Suggestion : "${autoRepairMojibake(specialite)}".`,
-        rawRow: r,
-      });
-    }
-
-    if (!email) {
-      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `L adresse email est obligatoire pour "${nom || 'Intervenant inconnu'}".`, rawRow: r });
-      isRowBlocked = true;
-    } else if (!isValidEmail(email)) {
-      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `Format d adresse email invalide : ${email}`, rawRow: r });
-      isRowBlocked = true;
-    } else if (seenEmails.has(email)) {
-      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `Adresse email en doublon dans le fichier : ${email}`, rawRow: r });
-      isRowBlocked = true;
-    } else {
-      seenEmails.add(email);
-    }
-
-    if (!isRowBlocked) {
-      validRows.push({
-        nom,
-        specialite: specialite || 'Generaliste',
-        email,
-        max_creneaux_entretien: creneaux,
-      });
+  const scoresMap = {};
+  (data || []).forEach((row) => {
+    const comp = row.referentiel_competences;
+    if (comp && comp.actif) {
+      scoresMap[comp.code] = {
+        aptitude: row.score_aptitude ?? 0,
+        appetence: row.score_appetence ?? 0,
+        label: comp.label,
+        ordre: comp.ordre,
+      };
     }
   });
 
-  const bloquants = anomalies.filter((a) => a.type === 'BLOQUANT').length;
-  const alertes = anomalies.filter((a) => a.type === 'AVERTISSEMENT').length;
+  return scoresMap;
+};
+
+export const normalizeSpecialiteKey = (spec, customCompetences = null) => {
+  if (!spec) return '';
+  const clean = spec.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+  if (customCompetences && Array.isArray(customCompetences)) {
+    const found = customCompetences.find((c) => {
+      const cLabel = c.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const cCode = c.code.toLowerCase();
+      return clean.includes(cLabel) || clean.includes(cCode) || cLabel.includes(clean);
+    });
+    if (found) return found.code;
+  }
+
+  if (clean.includes('calcul') || clean.includes('simulation')) return 'calculs_simulation_numerique';
+  if (clean.includes('essai') || clean.includes('caracterisation')) return 'essais_caracterisation';
+  if (clean.includes('fab') || clean.includes('proto')) return 'fabrication_prototypage';
+  if (clean.includes('conception') || clean.includes('meca')) return 'conception_mecanique';
+  if (clean.includes('auto')) return 'automatique_automatisme';
+  if (clean.includes('iot') || clean.includes('embarque')) return 'iot_systeme_embarque';
+  if (clean.includes('robot') || clean.includes('cobot')) return 'robot_cobot';
+  if (clean.includes('vision')) return 'vision';
+  if (clean === 'ia' || clean.includes('intelligence')) return 'ia';
+  if (clean.includes('ihm') || clean.includes('web') || clean.includes('mobile')) return 'ihm_appli_web_mobile';
+  if (clean.includes('ethique') || clean.includes('ergo')) return 'ethique_ergonomie';
+  return clean.replace(/[^a-z0-9_]/g, '_');
+};
+
+export const computeChefRanksForStudent = (etudiantAppetences, chefsList, referentielCompetences = null) => {
+  if (!etudiantAppetences || !chefsList) return new Map();
+
+  const scoredChefs = chefsList.map((chef) => {
+    const key = normalizeSpecialiteKey(chef.specialite, referentielCompetences);
+    const rawVal = etudiantAppetences[key];
+    const score = Number(typeof rawVal === 'object' && rawVal !== null ? (rawVal.appetence ?? 0) : (rawVal ?? 0));
+    return {
+      chef_id: chef.id,
+      score,
+      nom: chef.nom || '',
+      specialite: chef.specialite,
+    };
+  });
+
+  scoredChefs.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
+  });
+
+  const rankMap = new Map();
+  scoredChefs.forEach((sc, index) => {
+    rankMap.set(sc.chef_id, {
+      rank: index + 1,
+      score: sc.score,
+    });
+  });
+
+  return rankMap;
+};
+
+// ============================================================================
+// JAUGES ET QUOTAS DE NOTATION (Par Chef de Projet)
+// ============================================================================
+
+export const DEFAULT_GRADE_PERCENTAGES = {
+  pourcentage_a: 25.0,
+  pourcentage_b: 25.0,
+  pourcentage_c: 25.0,
+  pourcentage_d: 25.0,
+};
+
+export const fetchQuotasChefs = async () => {
+  const { data, error } = await supabase.from('quotas_evaluations_chef').select('*');
+  if (error) throw error;
+  return data || [];
+};
+
+export const saveQuotaChef = async (chef_de_projet_id, percentages) => {
+  const payload = {
+    chef_de_projet_id: Number(chef_de_projet_id),
+    pourcentage_a: Number(percentages.pourcentage_a ?? 25),
+    pourcentage_b: Number(percentages.pourcentage_b ?? 25),
+    pourcentage_c: Number(percentages.pourcentage_c ?? 25),
+    pourcentage_d: Number(percentages.pourcentage_d ?? 25),
+  };
+
+  const { data, error } = await supabase
+    .from('quotas_evaluations_chef')
+    .upsert(payload, { onConflict: 'chef_de_projet_id' })
+    .select();
+  if (error) throw error;
+  return data;
+};
+
+export const calculateChefGradeQuotas = (nbEtudiants, percentages = DEFAULT_GRADE_PERCENTAGES) => {
+  const total = Number(nbEtudiants) || 0;
+  if (total <= 0) {
+    return { maxA: 0, maxB: 0, maxC: 0, maxD: 0, total: 0 };
+  }
+
+  const pctA = Number(percentages.pourcentage_a ?? 25) / 100;
+  const pctB = Number(percentages.pourcentage_b ?? 25) / 100;
+  const pctD = Number(percentages.pourcentage_d ?? 25) / 100;
+
+  // Arrondi strict au superieur pour la note A (ex: 2.3 => 3)
+  let maxA = Math.ceil(total * pctA);
+  let maxB = Math.round(total * pctB);
+  let maxD = Math.round(total * pctD);
+
+  if (maxA + maxB + maxD > total) {
+    maxD = Math.max(0, total - (maxA + maxB));
+  }
+
+  let maxC = Math.max(0, total - (maxA + maxB + maxD));
 
   return {
-    status: bloquants > 0 ? 'BLOQUANT' : alertes > 0 ? 'AVERTISSEMENT' : 'CONFORME',
-    stats: { total: dataRows.length, valides: validRows.length, bloquants, alertes },
-    anomalies,
-    cleanPayload: validRows,
+    maxA,
+    maxB,
+    maxC,
+    maxD,
+    total,
   };
 };
 
 // ============================================================================
-// 2. VALIDATION DES ETUDIANTS
+// DETECTION DES DOCUMENTS ET DES VOEUX MOODLE
 // ============================================================================
-export const validateEtudiantsData = (rows) => {
-  const anomalies = [];
-  const validRows = [];
-  const seenEmails = new Set();
 
-  if (!rows || rows.length < 2) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient pas de donnees.', rawRow: [] }],
-      cleanPayload: [],
-    };
+export const getDocumentPublicUrl = (path) => {
+  if (!path) return null;
+  const { data } = supabase.storage.from('documents').getPublicUrl(path);
+  return `${data.publicUrl}?t=${Date.now()}`;
+};
+
+export const uploadDocument = async (etudiant_id, file, type = 'cv') => {
+  if (!file) throw new Error('Aucun fichier selectionne.');
+  if (file.size > 5 * 1024 * 1024) throw new Error('Le fichier depasse 5 Mo.');
+
+  const storagePath = `${type}/${etudiant_id}.pdf`;
+  const { error: uploadErr } = await supabase.storage
+    .from('documents')
+    .upload(storagePath, file, {
+      contentType: 'application/pdf',
+      upsert: true,
+    });
+  if (uploadErr) throw uploadErr;
+
+  const updatePayload = type === 'cv' ? { cv_path: storagePath } : { lm_path: storagePath };
+  const { error: dbErr } = await supabase
+    .from('etudiants')
+    .update(updatePayload)
+    .eq('id', etudiant_id);
+  if (dbErr) throw dbErr;
+
+  return storagePath;
+};
+
+export const cleanTextForMatching = (str) => {
+  return (str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/(\.pdf|_cv|_lm|cv|lm)/gi, '')
+    .replace(/[^a-z0-9]/g, '');
+};
+
+export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
+  if (!filePathOrName || !etudiantsList || etudiantsList.length === 0) return null;
+
+  let target = filePathOrName;
+  if (filePathOrName.includes('/')) {
+    const parts = filePathOrName.split('/').filter(Boolean);
+    if (parts.length >= 2) target = parts[parts.length - 2];
+  } else if (filePathOrName.includes('\\')) {
+    const parts = filePathOrName.split('\\').filter(Boolean);
+    if (parts.length >= 2) target = parts[parts.length - 2];
   }
 
-  const dataRows = rows.slice(1);
+  const cleanedTarget = cleanTextForMatching(target);
+  if (!cleanedTarget) return null;
 
-  dataRows.forEach((r, idx) => {
-    const ligneNum = idx + 2;
-    const rowIndex = idx + 1;
-    const col0 = cleanCellString(r[0]);
-    const col1 = cleanCellString(r[1]);
-    const col2 = cleanCellString(r[2]);
-    const col3 = cleanCellString(r[3]);
+  return etudiantsList.find((e) => {
+    const nom = cleanTextForMatching(e.nom);
+    const prenom = cleanTextForMatching(e.prenom);
+    const nomPrenom = `${nom}${prenom}`;
+    const prenomNom = `${prenom}${nom}`;
+    const emailPrefix = cleanTextForMatching(e.adresse_email?.split('@')[0]);
 
-    if (!col0 && !col1 && !col2) return;
+    return (
+      (nom && prenom && (cleanedTarget.includes(nomPrenom) || cleanedTarget.includes(prenomNom))) ||
+      (nomPrenom && nomPrenom.includes(cleanedTarget)) ||
+      (prenomNom && prenomNom.includes(cleanedTarget)) ||
+      (emailPrefix && (cleanedTarget.includes(emailPrefix) || emailPrefix.includes(cleanedTarget)))
+    );
+  }) || null;
+};
 
-    let nom = '';
-    let prenom = '';
-    let email = '';
-    let parcours = col3 || 'I2026';
-    let isRowBlocked = false;
+// export const decodeHtmlEntities = (str) => {
+//   return (str || '')
+//     .replace(/&#039;/g, "'")
+//     .replace(/&amp;/g, '&')
+//     .replace(/&quot;/g, '"')
+//     .replace(/&lt;/g, '<')
+//     .replace(/&gt;/g, '>');
+// };
 
-    if (col0.includes('@')) {
-      email = col0.toLowerCase();
-      parcours = col1 || 'I2026';
-      const namePart = email.split('@')[0];
-      const parts = namePart.split('.');
-      if (parts.length >= 2) {
-        prenom = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-        nom = parts.slice(1).join(' ').toUpperCase();
-      } else {
-        nom = namePart.toUpperCase();
-        prenom = '';
-      }
-    } else {
-      nom = col0;
-      prenom = col1;
-      email = col2.toLowerCase();
+export const decodeHtmlEntities = (str) => {
+  return (str || '')
+    .replace(/&#039;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+};
+
+export const findChefFromWishText = (wishText, chefsList) => {
+  if (!wishText || !chefsList || chefsList.length === 0) return null;
+
+  const raw = decodeHtmlEntities(String(wishText)).toLowerCase().trim();
+
+  // 1. Detection directe par projet ou chef :
+
+  // Olivier Quenard : Materiaux / Caracterisation / [O. QUENARD]
+  if (raw.includes('quenard') || raw.includes('quénard') || raw.includes('quã') || raw.includes('matériaux') || raw.includes('materiaux')) {
+    const c = chefsList.find((ch) => {
+      const n = ch.nom.toLowerCase();
+      return n.startsWith('qu') || n.includes('quenard') || n.includes('quã');
+    });
+    if (c) return c;
+  }
+
+  // Louis Sage : Traitement d'images / Informatique industrielle / [S. LOUIS]
+  if (raw.includes('louis') || raw.includes('sage') || raw.includes('traitement') || raw.includes('image')) {
+    const c = chefsList.find((ch) => {
+      const n = ch.nom.toLowerCase();
+      return n.startsWith('sag') || n.includes('sage') || n.includes('louis');
+    });
+    if (c) return c;
+  }
+
+  // Stephane D'Attanasio : Interactions humain-machine / [S. D'ATTANASIO]
+  if (raw.includes('attanasio') || raw.includes('humain-robot') || raw.includes('interdisciplina')) {
+    const c = chefsList.find((ch) => {
+      const n = ch.nom.toLowerCase();
+      return n.includes('attanasio') || n.startsWith('datt') || n.includes("d'att");
+    });
+    if (c) return c;
+  }
+
+  // Marc Bonnal : ERP / Organisation industrielle / [M. BONNAL]
+  if (raw.includes('bonnal') || raw.includes('erp') || raw.includes('organisation industrielle')) {
+    const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bonnal') || ch.nom.toLowerCase().startsWith('bonn'));
+    if (c) return c;
+  }
+
+  // Allal Bouzid : Smart Grid / [A. Bouzid]
+  if (raw.includes('bouzid') || raw.includes('smart grid')) {
+    const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('bouzid') || ch.nom.toLowerCase().startsWith('bouz'));
+    if (c) return c;
+  }
+
+  // Sylvain Corveleyn : Calculs / Dimensionnement / [S. CORVELEYN]
+  if (raw.includes('corveleyn') || raw.includes('dimensionnement')) {
+    const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('corveleyn') || ch.nom.toLowerCase().startsWith('corv'));
+    if (c) return c;
+  }
+
+  // Damien Deroland : Cobotique / [D. DEROLAND]
+  if (raw.includes('deroland') || raw.includes('cobotique')) {
+    const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('deroland') || ch.nom.toLowerCase().startsWith('dero'));
+    if (c) return c;
+  }
+
+  // Jean-Pierre Fradin : Thermique / Electronique de puissance / [J.P. FRADIN]
+  if (raw.includes('fradin') || raw.includes('thermique') || raw.includes('puissance')) {
+    const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('fradin') || ch.nom.toLowerCase().startsWith('frad'));
+    if (c) return c;
+  }
+
+  // Toufik Guettari : Data Science / Vision / IA / [T. GUETTARI]
+  if (raw.includes('guettari') || raw.includes('data science') || raw.includes('applis web')) {
+    const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('guettari') || ch.nom.toLowerCase().startsWith('guet'));
+    if (c) return c;
+  }
+
+  // Eric Loupiac : Machines Speciales / [E. LOUPIAC]
+  if (raw.includes('loupiac') || raw.includes('machines spéciales') || raw.includes('machines speciales')) {
+    const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('loupiac') || ch.nom.toLowerCase().startsWith('loup'));
+    if (c) return c;
+  }
+
+  // 2. Correspondance generique si autre format
+  const bracketMatch = raw.match(/\[([^\]]+)\]/);
+  const target = bracketMatch ? bracketMatch[1] : raw;
+  const cleanedTarget = cleanTextForMatching(target);
+
+  return chefsList.find((c) => {
+    const nomClean = cleanTextForMatching(c.nom);
+    return nomClean && (cleanedTarget.includes(nomClean) || nomClean.includes(cleanedTarget));
+  }) || null;
+};
+
+export const uploadBatchDocuments = async (items, type = 'cv', onProgress = null) => {
+  if (!items || items.length === 0) return { success: 0, errors: [] };
+
+  let successCount = 0;
+  const errors = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const { file, etudiant_id } = items[i];
+    try {
+      await uploadDocument(etudiant_id, file, type);
+      successCount++;
+    } catch (err) {
+      errors.push({ file: file.name, error: err.message });
     }
-
-    if (!email) {
-      const info = (nom || prenom) ? ` (Texte detecte : "${nom} ${prenom}". S agit-il d une ligne parasite ?)` : '';
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'BLOQUANT',
-        champ: 'email',
-        message: `Adresse email absente${info}`,
-        rawRow: r,
-      });
-      isRowBlocked = true;
-    } else if (!isValidEmail(email)) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'BLOQUANT',
-        champ: 'email',
-        message: `Format d email invalide : "${email}" pour ${nom} ${prenom}`,
-        rawRow: r,
-      });
-      isRowBlocked = true;
-    } else if (seenEmails.has(email)) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'BLOQUANT',
-        champ: 'email',
-        message: `Adresse email en doublon dans le fichier : "${email}"`,
-        rawRow: r,
-      });
-      isRowBlocked = true;
-    } else {
-      seenEmails.add(email);
+    if (onProgress) {
+      onProgress(i + 1, items.length);
     }
+  }
 
-    if (!nom) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'BLOQUANT',
-        champ: 'nom',
-        message: `Nom de famille manquant (Email : "${email}")`,
-        rawRow: r,
-      });
-      isRowBlocked = true;
-    } else if (hasCorruptedEncoding(nom)) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'nom',
-        message: `Caractere mal encode detecte dans le nom "${nom}". Suggestion : "${autoRepairMojibake(nom)}".`,
-        rawRow: r,
-      });
-    }
+  return { success: successCount, total: items.length, errors };
+};
 
-    if (prenom && hasCorruptedEncoding(prenom)) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'prenom',
-        message: `Caractere mal encode detecte dans le prenom "${prenom}". Suggestion : "${autoRepairMojibake(prenom)}".`,
-        rawRow: r,
-      });
-    }
+// ===== Chefs de projet =====
+export const fetchChefsDeProjet = async () => {
+  const { data, error } = await supabase.from('chefs_de_projet').select('*').order('nom');
+  if (error) throw error;
+  return data;
+};
 
-    if (!isRowBlocked) {
-      validRows.push({
-        nom,
-        prenom: prenom || '',
-        adresse_email: email,
-        parcours,
-      });
-    }
-  });
+// ===== Etudiants =====
+export const fetchEtudiants = async () => {
+  const { data, error } = await supabase.from('etudiants').select('*').order('nom');
+  if (error) throw error;
+  return data;
+};
 
-  const bloquants = anomalies.filter((a) => a.type === 'BLOQUANT').length;
-  const alertes = anomalies.filter((a) => a.type === 'AVERTISSEMENT').length;
+export const upsertEtudiant = async (etudiant) => {
+  const { data, error } = await supabase
+    .from('etudiants')
+    .upsert(etudiant, { onConflict: 'adresse_email' })
+    .select();
+  if (error) throw error;
+  return data;
+};
 
-  return {
-    status: bloquants > 0 ? 'BLOQUANT' : alertes > 0 ? 'AVERTISSEMENT' : 'CONFORME',
-    stats: { total: dataRows.length, valides: validRows.length, bloquants, alertes },
-    anomalies,
-    cleanPayload: validRows,
-  };
+// ===== Aptitudes & Appetences =====
+export const fetchAptitudesByEtudiant = async (etudiant_id) => {
+  const { data, error } = await supabase
+    .from('aptitudes')
+    .select('*')
+    .eq('etudiant_id', etudiant_id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+};
+
+export const fetchApetencesByEtudiant = async (etudiant_id) => {
+  const { data, error } = await supabase
+    .from('apetences')
+    .select('*')
+    .eq('etudiant_id', etudiant_id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+};
+
+export const fetchAllApetences = async () => {
+  const { data, error } = await supabase.from('apetences').select('*');
+  if (error) throw error;
+  return data || [];
 };
 
 // ============================================================================
-// 3. VALIDATION DES VOEUX MOODLE (Choix 1 a 10)
+// VOEUX COMPLETS DES ETUDIANTS (Rangs 1 a 10 pour Affectation)
 // ============================================================================
-export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
-  const anomalies = [];
-  const cleanPayload = [];
 
-  if (!etudiantsList || etudiantsList.length === 0) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Veuillez importer les etudiants avant d importer les voeux.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
+export const fetchAllEtudiantVoeux = async () => {
+  const { data, error } = await supabase
+    .from('etudiant_voeux')
+    .select('id, etudiant_id, chef_de_projet_id, rang');
+  if (error) throw error;
+  return data || [];
+};
 
-  if (!chefsList || chefsList.length === 0) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des chefs de projet est vide. Veuillez importer les chefs de projet avant les voeux.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
+export const saveEtudiantVoeu = async (etudiant_id, chef_de_projet_id, rang) => {
+  const { data, error } = await supabase
+    .from('etudiant_voeux')
+    .upsert(
+      { etudiant_id, chef_de_projet_id, rang: Number(rang) },
+      { onConflict: 'etudiant_id,chef_de_projet_id' }
+    )
+    .select();
+  if (error) throw error;
+  return data;
+};
 
-  if (!rows || rows.length < 2) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient aucune donnee.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
+export const resetAllEtudiantVoeux = async () => {
+  const { error } = await supabase.from('etudiant_voeux').delete().neq('id', 0);
+  if (error) throw error;
+};
 
-  const firstRow = rows[0];
-  const dataRows = rows.slice(1);
+// ============================================================================
+// SELECTIONS (Top 3 pour les Entretiens et Rendez-vous)
+// ============================================================================
 
-  const emailColIdx = firstRow.findIndex((col) => {
-    const s = cleanCellString(col).toLowerCase();
-    return s.includes('courriel') || s.includes('email');
+export const fetchSelections = async () => {
+  const { data, error } = await supabase.from('selections').select(`
+    id, etudiant_id, chef_de_projet_id, priorite,
+    etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path ),
+    chefs_de_projet ( id, nom, specialite, email )
+  `);
+  if (error) throw error;
+  return data.map((s) => ({
+    id: s.id,
+    etudiant: s.etudiants?.adresse_email,
+    chefDeProjet: s.chefs_de_projet?.nom,
+    etudiant_id: s.etudiant_id,
+    chef_de_projet_id: s.chef_de_projet_id,
+    priorite: s.priorite || 1,
+  }));
+};
+
+export const saveSelection = async (etudiant_id, chef_de_projet_id, priorite = 1) => {
+  const { data, error } = await supabase
+    .from('selections')
+    .upsert(
+      { etudiant_id, chef_de_projet_id, priorite: Number(priorite) || 1 },
+      { onConflict: 'etudiant_id,chef_de_projet_id' }
+    )
+    .select();
+  if (error) throw error;
+  return data;
+};
+
+export const deleteSelection = async (etudiant_id, chef_de_projet_id) => {
+  const { data, error } = await supabase
+    .from('selections')
+    .delete()
+    .match({ etudiant_id, chef_de_projet_id });
+  if (error) throw error;
+  return data;
+};
+
+// ============================================================================
+// INJECTION TRANSACTIONNELLE PAR RPC (Garantie atomique Tout-ou-Rien)
+// ============================================================================
+
+export const importVoeuxTransaction = async (cleanPayload) => {
+  const { data, error } = await supabase.rpc('import_voeux_transaction', {
+    payload: cleanPayload,
   });
+  if (error) throw error;
+  return data;
+};
 
-  if (emailColIdx === -1) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: dataRows.length, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'structure', message: 'Colonne "adresse de courriel" introuvable dans la premiere ligne du fichier.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
+// ===== Disponibilites =====
+export const fetchDisponibiliteChef = async (chef_de_projet_id, date) => {
+  const { data, error } = await supabase
+    .from('disponibilite_binaire_chefprojet')
+    .select('*')
+    .match({ chef_de_projet_id, date })
+    .maybeSingle();
+  if (error) throw error;
+  return data || { chef_de_projet_id, date, ...emptySlots() };
+};
 
-  const findChoiceColIndex = (rank) => {
-    return firstRow.findIndex((col) => {
-      const s = cleanCellString(col).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      if (!s.includes('choix')) return false;
-      if (rank === 1) return s.includes('1er') || s.includes('1 er') || s.includes('1e');
-      if (rank === 2) return s.includes('2nd') || s.includes('2eme') || s.includes('2e');
-      return s.includes(`${rank}eme`) || s.includes(`${rank}e`) || s.includes(`${rank} eme`);
-    });
-  };
+export const saveDisponibiliteChef = async (chef_de_projet_id, date, slots) => {
+  const slotPayload = normalizeSlots(slots);
+  const { data, error } = await supabase
+    .from('disponibilite_binaire_chefprojet')
+    .upsert({ chef_de_projet_id, date, ...slotPayload }, { onConflict: 'chef_de_projet_id,date' })
+    .select();
+  if (error) throw error;
+  return data;
+};
 
-  const choiceColsMap = [];
-  for (let rank = 1; rank <= 10; rank++) {
-    const colIdx = findChoiceColIndex(rank);
-    if (colIdx >= 0) {
-      choiceColsMap.push({ rank, colIdx });
-    }
-  }
+export const fetchDisponibiliteEtudiant = async (etudiant_id, date) => {
+  const { data, error } = await supabase
+    .from('disponibilite_binaire_etudiant')
+    .select('*')
+    .match({ etudiant_id, date })
+    .maybeSingle();
+  if (error) throw error;
+  return data || { etudiant_id, date, ...emptySlots() };
+};
 
-  if (choiceColsMap.length === 0) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: dataRows.length, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'structure', message: 'Aucune colonne de choix (1er Choix, 2nd Choix, etc.) n a ete reconnue dans l entete.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
+export const saveDisponibiliteEtudiant = async (etudiant_id, date, slots) => {
+  const slotPayload = normalizeSlots(slots);
+  const { data, error } = await supabase
+    .from('disponibilite_binaire_etudiant')
+    .upsert({ etudiant_id, date, ...slotPayload }, { onConflict: 'etudiant_id,date' })
+    .select();
+  if (error) throw error;
+  return data;
+};
 
-  const etudiantsByEmail = new Map(etudiantsList.map((e) => [e.adresse_email.toLowerCase().trim(), e]));
-  const seenEmailsInFile = new Map();
-  const respondentsEmailSet = new Set();
+// ===== Rendez-vous =====
+export const fetchRendezVous = async (date = null) => {
+  let query = supabase
+    .from('rendez_vous')
+    .select(
+      `
+      id, date, heure, heure_fin, chef_de_projet_id, etudiant_id,
+      chefs_de_projet ( id, nom ),
+      etudiants ( id, nom, prenom, adresse_email, cv_path, lm_path )
+    `
+    )
+    .order('heure', { ascending: true });
 
-  dataRows.forEach((r, idx) => {
-    const ligneNum = idx + 2;
-    const rowIndex = idx + 1;
-    const email = cleanCellString(r[emailColIdx]).toLowerCase();
+  if (date) query = query.eq('date', date);
 
-    if (!email) return;
+  const { data, error } = await query;
+  if (error) throw error;
 
-    if (!isValidEmail(email)) {
-      anomalies.push({ ligne: ligneNum, rowIndex, type: 'BLOQUANT', champ: 'email', message: `Adresse email invalide : ${email}`, rawRow: r });
-      return;
-    }
+  return data.map((r) => ({
+    id: r.id,
+    date: r.date,
+    heure_debut: r.heure?.slice(0, 5) || '',
+    heure_fin: r.heure_fin?.slice(0, 5) || '',
+    chef_de_projet_id: r.chef_de_projet_id,
+    etudiant_id: r.etudiant_id || r.etudiants?.id,
+    chef_de_projet: r.chefs_de_projet?.nom,
+    etudiant: `${r.etudiants?.nom || ''} ${r.etudiants?.prenom || ''}`.trim(),
+    email_etudiant: r.etudiants?.adresse_email,
+    cv_path: r.etudiants?.cv_path,
+    lm_path: r.etudiants?.lm_path,
+  }));
+};
 
-    if (seenEmailsInFile.has(email)) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'doublon',
-        message: `Reponse multiple detectee pour ${email}. La ligne ${ligneNum} ecrasera la ligne precedente ${seenEmailsInFile.get(email)}.`,
-        rawRow: r,
-      });
-    }
-    seenEmailsInFile.set(email, ligneNum);
-    respondentsEmailSet.add(email);
-
-    const student = etudiantsByEmail.get(email);
-    if (!student) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'etudiant',
-        message: `L etudiant ${email} n est pas enregistre dans la base. Ses voeux ne pourront pas etre injectes.`,
-        rawRow: r,
-      });
-      return;
-    }
-
-    const choices = [];
-    const selectedChefsForStudent = new Set();
-
-    choiceColsMap.forEach(({ rank, colIdx }) => {
-      const txt = cleanCellString(r[colIdx]);
-      if (!txt) return;
-
-      const chef = findChefFromWishText(txt, chefsList);
-
-      if (!chef) {
-        anomalies.push({
-          ligne: ligneNum,
-          rowIndex,
-          type: 'AVERTISSEMENT',
-          champ: `choix_${rank}`,
-          message: `Choix ${rank} non reconnu pour ${student.nom} ${student.prenom} : "${txt}"`,
-          rawRow: r,
-        });
-        return;
-      }
-
-      if (selectedChefsForStudent.has(chef.id)) {
-        anomalies.push({
-          ligne: ligneNum,
-          rowIndex,
-          type: 'AVERTISSEMENT',
-          champ: `choix_${rank}`,
-          message: `Le chef ${chef.nom} a ete selectionne plusieurs fois par ${student.nom} ${student.prenom}. Seul le rang le plus prioritaire sera conserve.`,
-          rawRow: r,
-        });
-        return;
-      }
-
-      selectedChefsForStudent.add(chef.id);
-      choices.push({ rank, chefId: chef.id, chefNom: chef.nom });
-    });
-
-    const top3Count = choices.filter((c) => c.rank <= 3).length;
-    if (top3Count < 3) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'top3',
-        message: `L etudiant ${student.nom} ${student.prenom} n a formule que ${top3Count} choix valide(s) sur les 3 requis pour les entretiens.`,
-      });
-    }
-
-    if (choices.length > 0) {
-      cleanPayload.push({
-        etudiantId: student.id,
-        nomComplet: `${student.nom} ${student.prenom}`.trim(),
-        email,
-        choices,
-      });
-    }
-  });
-
-  const nonRespondents = etudiantsList.filter((e) => !respondentsEmailSet.has(e.adresse_email.toLowerCase().trim()));
-  if (nonRespondents.length > 0) {
-    anomalies.push({
-      ligne: 0,
-      rowIndex: -1,
-      type: 'AVERTISSEMENT',
-      champ: 'non_repondants',
-      message: `${nonRespondents.length} etudiant(s) inscrit(s) n ont formule aucun voeu : ${nonRespondents.map((e) => `${e.nom} ${e.prenom}`).join(', ')}.`,
-      rawRow: [],
-    });
-  }
-
-  const bloquants = anomalies.filter((a) => a.type === 'BLOQUANT').length;
-  const alertes = anomalies.filter((a) => a.type === 'AVERTISSEMENT').length;
-
-  return {
-    status: bloquants > 0 ? 'BLOQUANT' : alertes > 0 ? 'AVERTISSEMENT' : 'CONFORME',
-    stats: {
-      total: dataRows.length,
-      valides: cleanPayload.length,
-      nonRepondants: nonRespondents.length,
-      bloquants,
-      alertes,
+export const genererRendezVous = async (dateDebut, dateFin, token) => {
+  const response = await fetch(`${supabaseUrl}/functions/v1/generer-rendez-vous`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-    anomalies,
-    cleanPayload,
-  };
+    body: JSON.stringify({ date_debut: dateDebut, date_fin: dateFin }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || `Erreur serveur: ${response.status}`);
+  }
+  return await response.json();
 };
 
-// ============================================================================
-// 4. VALIDATION DU QUESTIONNAIRE APTITUDES / APPETENCES
-// ============================================================================
-export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsList = [], referentielCompetences = []) => {
-  const anomalies = [];
-  const cleanPayload = [];
-
-  if (!etudiantsList || etudiantsList.length === 0) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Veuillez importer les etudiants d abord.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
-
-  if (!referentielCompetences || referentielCompetences.length === 0) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'Aucune competence active dans le referentiel. Veuillez configurer le referentiel d abord.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
-
-  if (!rows || rows.length < 2) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient aucune donnee.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
-
-  const firstRow = rows[0];
-  const dataRows = rows.slice(1);
-
-  const emailColIdx = firstRow.findIndex((col) => {
-    const s = cleanCellString(col).toLowerCase();
-    return s.includes('courriel') || s.includes('email');
-  });
-
-  if (emailColIdx === -1) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: dataRows.length, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'structure', message: 'Colonne email/courriel introuvable.', rawRow: [] }],
-      cleanPayload: [],
-    };
-  }
-
-  const etudiantsByEmail = new Map(etudiantsList.map((e) => [e.adresse_email.toLowerCase().trim(), e]));
-  const startOffset = type === 'aptitudes' ? 5 : (5 + referentielCompetences.length);
-
-  dataRows.forEach((r, idx) => {
-    const ligneNum = idx + 2;
-    const rowIndex = idx + 1;
-    const email = cleanCellString(r[emailColIdx]).toLowerCase();
-    if (!email) return;
-
-    const student = etudiantsByEmail.get(email);
-    if (!student) {
-      anomalies.push({
-        ligne: ligneNum,
-        rowIndex,
-        type: 'AVERTISSEMENT',
-        champ: 'etudiant',
-        message: `Ligne ignoree : ${email} n est pas enregistre dans la table des etudiants.`,
-        rawRow: r,
-      });
-      return;
-    }
-
-    const scores = { adresse_email: email, etudiant_id: student.id };
-    referentielCompetences.forEach((comp, cIdx) => {
-      const cellVal = r[startOffset + cIdx] !== undefined ? r[startOffset + cIdx] : r[cIdx + 1];
-      const parsed = parseInt(cleanCellString(cellVal), 10);
-      scores[comp.code] = !isNaN(parsed) && parsed >= 0 ? parsed : 0;
-    });
-
-    cleanPayload.push(scores);
-  });
-
-  const bloquants = anomalies.filter((a) => a.type === 'BLOQUANT').length;
-  const alertes = anomalies.filter((a) => a.type === 'AVERTISSEMENT').length;
-
-  return {
-    status: bloquants > 0 ? 'BLOQUANT' : alertes > 0 ? 'AVERTISSEMENT' : 'CONFORME',
-    stats: { total: dataRows.length, valides: cleanPayload.length, bloquants, alertes },
-    anomalies,
-    cleanPayload,
-  };
+// ===== Evaluations =====
+export const fetchEvaluations = async () => {
+  const { data, error } = await supabase.from('evaluations').select(`
+    id, note, commentaire, chef_de_projet_id, etudiant_id,
+    etudiants ( nom, prenom, adresse_email ),
+    chefs_de_projet ( nom )
+  `);
+  if (error) throw error;
+  return data;
 };
 
-// ============================================================================
-// 5. VALIDATION DES DOCUMENTS (CV et Lettres de motivation)
-// ============================================================================
-export const validateDocumentsList = (filesList, etudiantsList = []) => {
-  const anomalies = [];
-  const cleanItems = [];
+export const saveEvaluation = async (chef_de_projet_id, etudiant_id, note, commentaire = '') => {
+  const { data, error } = await supabase
+    .from('evaluations')
+    .upsert(
+      { chef_de_projet_id, etudiant_id, note, commentaire },
+      { onConflict: 'chef_de_projet_id,etudiant_id' }
+    )
+    .select();
+  if (error) throw error;
+  return data;
+};
 
-  if (!etudiantsList || etudiantsList.length === 0) {
-    return {
-      status: 'BLOQUANT',
-      stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
-      anomalies: [{ ligne: 0, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Impossible de rapprocher les documents.', rawRow: [] }],
-      cleanPayload: [],
-    };
+// ===== Affectations finales =====
+export const fetchAffectations = async () => {
+  const { data, error } = await supabase.from('affectation').select(`
+    id, chef_de_projet_id, etudiant_id,
+    etudiants ( id, nom, prenom, adresse_email, parcours ),
+    chefs_de_projet ( id, nom, specialite, email )
+  `);
+  if (error) throw error;
+  return data;
+};
+
+export const saveAffectation = async (chef_de_projet_id, etudiant_id) => {
+  const { data, error } = await supabase
+    .from('affectation')
+    .upsert({ chef_de_projet_id, etudiant_id }, { onConflict: 'etudiant_id' })
+    .select();
+  if (error) throw error;
+  return data;
+};
+
+export const deleteAffectation = async (etudiant_id) => {
+  const { data, error } = await supabase
+    .from('affectation')
+    .delete()
+    .eq('etudiant_id', etudiant_id);
+  if (error) throw error;
+  return data;
+};
+
+// ===== Imports en Masse =====
+export const importChefsDeProjet = async (rows) => {
+  const { data, error } = await supabase.from('chefs_de_projet').upsert(rows, { onConflict: 'email' }).select();
+  if (error) throw error;
+  return data;
+};
+
+export const importEtudiants = async (rows) => {
+  const { data, error } = await supabase.from('etudiants').upsert(rows, { onConflict: 'adresse_email' }).select();
+  if (error) throw error;
+  return data;
+};
+
+export const importAptitudes = async (rows) => {
+  const etudiants = await fetchEtudiants();
+  const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
+
+  const payload = rows
+    .map((r) => {
+      const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
+      if (!etudiant_id) return null;
+      const { adresse_email, ...rest } = r;
+      return { etudiant_id, ...rest };
+    })
+    .filter(Boolean);
+
+  const { data, error } = await supabase.from('aptitudes').upsert(payload, { onConflict: 'etudiant_id' }).select();
+  if (error) throw error;
+  return data;
+};
+
+export const importApetences = async (rows) => {
+  const etudiants = await fetchEtudiants();
+  const emailToId = new Map(etudiants.map((e) => [e.adresse_email.toLowerCase().trim(), e.id]));
+
+  const payload = rows
+    .map((r) => {
+      const etudiant_id = emailToId.get(String(r.adresse_email || '').toLowerCase().trim());
+      if (!etudiant_id) return null;
+      const { adresse_email, ...rest } = r;
+      return { etudiant_id, ...rest };
+    })
+    .filter(Boolean);
+
+  const { data, error } = await supabase.from('apetences').upsert(payload, { onConflict: 'etudiant_id' }).select();
+  if (error) throw error;
+  return data;
+};
+
+// ===== FONCTIONS DE REMISE A ZERO CIBLEES (Admin) =====
+
+export const resetAllSelections = async () => {
+  const { error } = await supabase.from('selections').delete().neq('id', 0);
+  if (error) throw error;
+};
+
+export const resetAllRendezVous = async (dateDebut = null, dateFin = null) => {
+  let query = supabase.from('rendez_vous').delete();
+  if (dateDebut && dateFin) {
+    query = query.gte('date', dateDebut).lte('date', dateFin);
+  } else {
+    query = query.neq('id', 0);
+  }
+  const { error } = await query;
+  if (error) throw error;
+};
+
+export const resetAllEvaluations = async () => {
+  const { error } = await supabase.from('evaluations').delete().neq('id', 0);
+  if (error) throw error;
+};
+
+export const resetAllAffectations = async () => {
+  const { error } = await supabase.from('affectation').delete().neq('id', 0);
+  if (error) throw error;
+};
+
+export const resetAllDisponibilites = async (cible = 'all', date = null) => {
+  if (cible === 'chefs' || cible === 'all') {
+    let q = supabase.from('disponibilite_binaire_chefprojet').delete();
+    if (date) q = q.eq('date', date);
+    else q = q.neq('id', 0);
+    const { error } = await q;
+    if (error) throw error;
+  }
+  if (cible === 'etudiants' || cible === 'all') {
+    let q = supabase.from('disponibilite_binaire_etudiant').delete();
+    if (date) q = q.eq('date', date);
+    else q = q.neq('id', 0);
+    const { error } = await q;
+    if (error) throw error;
+  }
+};
+
+export const deleteSingleDocument = async (etudiant_id, type = 'cv') => {
+  const filePath = `${type}/${etudiant_id}.pdf`;
+  await supabase.storage.from('documents').remove([filePath]);
+  const updatePayload = type === 'cv' ? { cv_path: null } : { lm_path: null };
+  const { error } = await supabase.from('etudiants').update(updatePayload).eq('id', etudiant_id);
+  if (error) throw error;
+};
+
+export const purgeAllDocuments = async () => {
+  const { data: cvFiles } = await supabase.storage.from('documents').list('cv');
+  if (cvFiles && cvFiles.length > 0) {
+    await supabase.storage.from('documents').remove(cvFiles.map((f) => `cv/${f.name}`));
   }
 
-  const filesArray = Array.from(filesList || []);
-  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const { data: lmFiles } = await supabase.storage.from('documents').list('lm');
+  if (lmFiles && lmFiles.length > 0) {
+    await supabase.storage.from('documents').remove(lmFiles.map((f) => `lm/${f.name}`));
+  }
 
-  filesArray.forEach((file, idx) => {
-    const fullPath = file.webkitRelativePath || file.name;
-    const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+  const { error } = await supabase.from('etudiants').update({ cv_path: null, lm_path: null }).neq('id', 0);
+  if (error) throw error;
+};
 
-    let folderLabel = file.name;
-    if (file.webkitRelativePath) {
-      const parts = file.webkitRelativePath.split('/');
-      if (parts.length >= 2) {
-        folderLabel = `Dossier ${parts[parts.length - 2]} / ${file.name}`;
-      }
-    }
+export const resetEntireDatabaseAndStorage = async () => {
+  try {
+    await purgeAllDocuments();
+  } catch (err) {
+    console.warn('Storage deja vide ou erreur purge:', err);
+  }
 
-    if (!isPdf) {
-      anomalies.push({
-        ligne: idx + 1,
-        rowIndex: idx,
-        type: 'BLOQUANT',
-        champ: 'format',
-        message: `Fichier rejete : "${file.name}" n est pas un fichier PDF.`,
-        rawRow: [file.name],
-      });
-      return;
-    }
+  try {
+    await resetAllEtudiantVoeux();
+  } catch (err) {
+    console.warn('Erreur purge voeux:', err);
+  }
 
-    if (file.size > MAX_FILE_SIZE) {
-      anomalies.push({
-        ligne: idx + 1,
-        rowIndex: idx,
-        type: 'BLOQUANT',
-        champ: 'taille',
-        message: `Fichier trop volumineux : "${file.name}" depasse 5 Mo (${(file.size / (1024 * 1024)).toFixed(1)} Mo).`,
-        rawRow: [file.name],
-      });
-      return;
-    }
-
-    const matchedStudent = findEtudiantForDocument(fullPath, etudiantsList);
-
-    if (!matchedStudent) {
-      anomalies.push({
-        ligne: idx + 1,
-        rowIndex: idx,
-        type: 'AVERTISSEMENT',
-        champ: 'etudiant',
-        message: `Etudiant introuvable pour le document : "${folderLabel}". Verifiez l orthographe du dossier.`,
-        rawRow: [folderLabel],
-      });
-      return;
-    }
-
-    cleanItems.push({
-      file,
-      fileName: folderLabel,
-      student: matchedStudent,
-      matched: true,
+  const { data, error } = await supabase.rpc('reset_all_campaign_data');
+  if (error) {
+    const { error: fallbackErr } = await supabase.rpc('reset_selective_data', {
+      options: {
+        rendez_vous: true,
+        evaluations: true,
+        affectations: true,
+        selections: true,
+        disponibilites: true,
+        competences: true,
+        etudiants: true,
+        chefs: true,
+        users: true,
+      },
     });
-  });
+    if (fallbackErr) throw fallbackErr;
+  }
+  return data;
+};
 
-  const bloquants = anomalies.filter((a) => a.type === 'BLOQUANT').length;
-  const alertes = anomalies.filter((a) => a.type === 'AVERTISSEMENT').length;
+export const clearClientStorageAndCookies = () => {
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
 
-  return {
-    status: bloquants > 0 ? 'BLOQUANT' : alertes > 0 ? 'AVERTISSEMENT' : 'CONFORME',
-    stats: { total: filesArray.length, valides: cleanItems.length, bloquants, alertes },
-    anomalies,
-    cleanPayload: cleanItems,
-  };
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+    }
+
+    if (window.caches) {
+      caches.keys().then((names) => {
+        for (const name of names) caches.delete(name);
+      });
+    }
+  } catch (err) {
+    console.warn('Erreur nettoyage client:', err);
+  }
 };
