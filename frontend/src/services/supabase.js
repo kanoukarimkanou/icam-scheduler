@@ -7960,4 +7960,14 @@ export const clearClientStorageAndCookies = () => {
   } catch (err) {
     console.warn('Erreur nettoyage client:', err);
   }
+
+// ===== Mesure du stockage Cloud (Quota 500 Mo) =====
+export const fetchStorageUsage = async (bucket = 'documents') => {
+  const { data, error } = await supabase.rpc('get_storage_usage', { p_bucket: bucket });
+  if (error) throw error;
+  return data;
+};
+
+
+
 };
