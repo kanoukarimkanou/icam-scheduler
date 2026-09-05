@@ -33946,9 +33946,9 @@ export default function EvaluationsTable() {
                           const isTop3 = isRealChoice && rankNum <= 3;
 
                           const rankText = isRealChoice
-                            ? `${rankLabel(rankNum)}${isAssignedToThisChef ? ' (Aff)' : ''}`
+                            ? `${rankLabel(rankNum)}${isAssignedToThisChef ? '✓' : ''}`
                             : isAssignedToThisChef
-                            ? 'HV (Aff)'
+                            ? 'HV (✓)'
                             : '—';
 
                           const isTogglingThisCell = savingAffectationId === etud.id && savingAffectationChefId === c.id;
