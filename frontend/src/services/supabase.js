@@ -7385,6 +7385,15 @@ export const findEtudiantForDocument = (filePathOrName, etudiantsList) => {
   }) || null;
 };
 
+// export const decodeHtmlEntities = (str) => {
+//   return (str || '')
+//     .replace(/&#039;/g, "'")
+//     .replace(/&amp;/g, '&')
+//     .replace(/&quot;/g, '"')
+//     .replace(/&lt;/g, '<')
+//     .replace(/&gt;/g, '>');
+// };
+
 export const decodeHtmlEntities = (str) => {
   return (str || '')
     .replace(/&#039;/g, "'")
