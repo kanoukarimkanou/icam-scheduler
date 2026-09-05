@@ -11,32 +11,35 @@ export const cleanCellString = (val) => {
     .trim();
 };
 
+const MOJIBAKE_PATTERNS = [
+  'Ã©', 'Ã¨', 'Ã ', 'Ãª', 'Ã§', 'Ã®', 'Ã´', 'Ã¹', 'Ã»', 'Ã¢', 'Ã«', 'Ã¯', 'Ã¼', 'Ã¶', 'Ã¤', 'Â', 'â€™', '\uFFFD'
+];
+
 // Detection des caracteres speciaux ou mal encodes (mojibake UTF-8 / Windows-1252)
 export const hasCorruptedEncoding = (str) => {
   if (!str) return false;
-  const mojibakeRegex = /Ã©|Ã¨|Ã |Ãª|Ã§|Ã®|Ã´|Ã¹|Ã»|Ã¢|Ã«|Ã¯|Ã¼|Ã¶|Ã¤|Â|â€™|/i;
-  return mojibakeRegex.test(str);
+  return MOJIBAKE_PATTERNS.some((pattern) => str.includes(pattern));
 };
 
 // Reparation automatique proposee en suggestion de correction
 export const autoRepairMojibake = (str) => {
   if (!str) return '';
   return str
-    .replace(/Ã©/g, 'e')
-    .replace(/Ã¨/g, 'e')
-    .replace(/Ã /g, 'a')
-    .replace(/Ãª/g, 'e')
-    .replace(/Ã§/g, 'c')
-    .replace(/Ã®/g, 'i')
-    .replace(/Ã´/g, 'o')
-    .replace(/Ã¹/g, 'u')
-    .replace(/Ã»/g, 'u')
-    .replace(/Ã¢/g, 'a')
-    .replace(/Ã«/g, 'e')
-    .replace(/Ã¯/g, 'i')
-    .replace(/â€™/g, "'")
-    .replace(/Â/g, '')
-    .replace(//g, '');
+    .replaceAll('Ã©', 'e')
+    .replaceAll('Ã¨', 'e')
+    .replaceAll('Ã ', 'a')
+    .replaceAll('Ãª', 'e')
+    .replaceAll('Ã§', 'c')
+    .replaceAll('Ã®', 'i')
+    .replaceAll('Ã´', 'o')
+    .replaceAll('Ã¹', 'u')
+    .replaceAll('Ã»', 'u')
+    .replaceAll('Ã¢', 'a')
+    .replaceAll('Ã«', 'e')
+    .replaceAll('Ã¯', 'i')
+    .replaceAll('â€™', "'")
+    .replaceAll('Â', '')
+    .replaceAll('\uFFFD', '');
 };
 
 // Validation du format d adresse email
