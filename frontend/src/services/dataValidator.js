@@ -244,12 +244,12 @@ export const validateEtudiantsData = (rows) => {
     let nom = '';
     let prenom = '';
     let email = '';
-    let parcours = col3 || 'I2026';
+    let parcours = col3 || '';
     let isRowBlocked = false;
 
     if (col0.includes('@')) {
       email = col0.toLowerCase();
-      parcours = col1 || 'I2026';
+      parcours = col1 || '';
       const namePart = email.split('@')[0];
       const parts = namePart.split('.');
       if (parts.length >= 2) {
@@ -489,7 +489,6 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
           type: 'AVERTISSEMENT',
           champ: `choix_${rank}`,
           message: `Choix ${rank} non reconnu pour ${student.nom} ${student.prenom} : "${txt}"`,
-          rawRow: r,
         });
         return;
       }
@@ -501,7 +500,6 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
           type: 'AVERTISSEMENT',
           champ: `choix_${rank}`,
           message: `Le chef ${chef.nom} a ete selectionne plusieurs fois par ${student.nom} ${student.prenom}. Seul le rang le plus prioritaire sera conserve.`,
-          rawRow: r,
         });
         return;
       }
@@ -561,9 +559,85 @@ export const validateVoeuxData = (rows, etudiantsList = [], chefsList = []) => {
 };
 
 // ============================================================================
-// 4. VALIDATION DU QUESTIONNAIRE APTITUDES / APPETENCES
+// 4. MAPPING ET VALIDATION DU QUESTIONNAIRE APTITUDES / APPETENCES
 // ============================================================================
-export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsList = [], referentielCompetences = []) => {
+
+// Reconnaissance d une colonne Moodle correspondant a une competence par mots-cles
+const matchCompetenceToHeader = (headerText, comp) => {
+  const hClean = cleanTextForMatching(headerText);
+  const codeClean = cleanTextForMatching(comp.code);
+  const labelClean = cleanTextForMatching(comp.label);
+
+  if (hClean.includes(labelClean) || labelClean.includes(hClean)) return true;
+  if (hClean.includes(codeClean) || codeClean.includes(hClean)) return true;
+
+  const keywordsMap = {
+    calculs_simulation_numerique: ['calcul', 'simulation'],
+    essais_caracterisation: ['essai', 'caracteris'],
+    fabrication_prototypage: ['fabrication', 'proto'],
+    conception_mecanique: ['conception', 'meca'],
+    automatique_automatisme: ['automatique', 'automatisme'],
+    iot_systeme_embarque: ['iot', 'embarque', 'electronique'],
+    robot_cobot: ['robot', 'cobot'],
+    vision: ['vision'],
+    ia: ['ia', 'intelligence'],
+    ihm_appli_web_mobile: ['ihm', 'web', 'mobile'],
+    ethique_ergonomie: ['ethique', 'ergonomie'],
+  };
+
+  const kw = keywordsMap[comp.code];
+  if (kw && kw.some((k) => hClean.includes(k))) return true;
+
+  return false;
+};
+
+// Analyse des en-tetes Moodle et auto-detection des colonnes (Occurrence 1 = Aptitude, Occurrence 2 = Appetence)
+export const detectCompetenceColumnMapping = (headers, referentielCompetences, type = 'aptitudes') => {
+  const mapping = [];
+  const availableColumns = headers.map((h, idx) => ({
+    colIdx: idx,
+    label: `Col ${idx + 1} : ${cleanCellString(h) || '(Sans titre)'}`,
+  }));
+
+  referentielCompetences.forEach((comp) => {
+    const matchedCols = [];
+    headers.forEach((h, idx) => {
+      // On ignore les 5 premieres colonnes de metadonnees (Nom, Groupe, Email, Date, Parcours)
+      if (idx <= 4) return;
+      if (matchCompetenceToHeader(h, comp)) {
+        matchedCols.push(idx);
+      }
+    });
+
+    // Aptitudes = 1ere occurrence (Bloc 1), Appetences = 2eme occurrence (Bloc 2)
+    let selectedColIdx = -1;
+    if (matchedCols.length > 0) {
+      if (type === 'aptitudes') {
+        selectedColIdx = matchedCols[0];
+      } else {
+        selectedColIdx = matchedCols.length >= 2 ? matchedCols[1] : matchedCols[0];
+      }
+    }
+
+    mapping.push({
+      compCode: comp.code,
+      compLabel: comp.label,
+      colIdx: selectedColIdx,
+      colName: selectedColIdx >= 0 ? cleanCellString(headers[selectedColIdx]) : '',
+      autoMatched: selectedColIdx >= 0,
+    });
+  });
+
+  return { mapping, availableColumns };
+};
+
+export const validateCompetencesScores = (
+  rows,
+  type = 'aptitudes',
+  etudiantsList = [],
+  referentielCompetences = [],
+  customMapping = null
+) => {
   const anomalies = [];
   const cleanPayload = [];
 
@@ -573,6 +647,8 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
       anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'La table des etudiants est vide. Veuillez importer les etudiants d abord.', rawRow: [] }],
       cleanPayload: [],
+      mapping: [],
+      availableColumns: [],
     };
   }
 
@@ -582,6 +658,8 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
       anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'prerequis', message: 'Aucune competence active dans le referentiel. Veuillez configurer le referentiel d abord.', rawRow: [] }],
       cleanPayload: [],
+      mapping: [],
+      availableColumns: [],
     };
   }
 
@@ -591,6 +669,8 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
       stats: { total: 0, valides: 0, bloquants: 1, alertes: 0 },
       anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'fichier', message: 'Le fichier ne contient aucune donnee.', rawRow: [] }],
       cleanPayload: [],
+      mapping: [],
+      availableColumns: [],
     };
   }
 
@@ -608,11 +688,67 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
       stats: { total: dataRows.length, valides: 0, bloquants: 1, alertes: 0 },
       anomalies: [{ ligne: 1, rowIndex: 0, type: 'BLOQUANT', champ: 'structure', message: 'Colonne email/courriel introuvable.', rawRow: [] }],
       cleanPayload: [],
+      mapping: [],
+      availableColumns: [],
     };
   }
 
+  // Detection automatique du mapping pour chaque competence
+  const { mapping: autoMapping, availableColumns } = detectCompetenceColumnMapping(
+    firstRow,
+    referentielCompetences,
+    type
+  );
+
+  const effectiveMapping = new Map();
+  const activeMappingList = [];
+
+  autoMapping.forEach((item) => {
+    const chosenColIdx = (customMapping && customMapping[item.compCode] !== undefined)
+      ? Number(customMapping[item.compCode])
+      : item.colIdx;
+
+    effectiveMapping.set(item.compCode, chosenColIdx);
+    activeMappingList.push({
+      compCode: item.compCode,
+      compLabel: item.compLabel,
+      colIdx: chosenColIdx,
+      colName: chosenColIdx >= 0 ? cleanCellString(firstRow[chosenColIdx]) : '',
+      autoMatched: item.autoMatched,
+    });
+
+    if (chosenColIdx === -1) {
+      anomalies.push({
+        ligne: 1,
+        rowIndex: 0,
+        type: 'AVERTISSEMENT',
+        champ: item.compCode,
+        message: `Colonne introuvable pour "${item.compLabel}". Les notes seront a 0 sauf si vous l associez manuellement.`,
+        rawRow: [],
+      });
+    }
+  });
+
+  // Controle anti-doublon : deux competences ne doivent pas pointer sur la meme colonne
+  const usedCols = new Map();
+  activeMappingList.forEach((item) => {
+    if (item.colIdx >= 0) {
+      if (usedCols.has(item.colIdx)) {
+        anomalies.push({
+          ligne: 1,
+          rowIndex: 0,
+          type: 'AVERTISSEMENT',
+          champ: 'doublon_colonne',
+          message: `La colonne ${item.colIdx + 1} ("${item.colName}") est associee a deux competences : "${usedCols.get(item.colIdx)}" et "${item.compLabel}".`,
+          rawRow: [],
+        });
+      } else {
+        usedCols.set(item.colIdx, item.compLabel);
+      }
+    }
+  });
+
   const etudiantsByEmail = new Map(etudiantsList.map((e) => [e.adresse_email.toLowerCase().trim(), e]));
-  const startOffset = type === 'aptitudes' ? 5 : (5 + referentielCompetences.length);
 
   dataRows.forEach((r, idx) => {
     const ligneNum = idx + 2;
@@ -634,10 +770,14 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
     }
 
     const scores = { adresse_email: email, etudiant_id: student.id };
-    referentielCompetences.forEach((comp, cIdx) => {
-      const cellVal = r[startOffset + cIdx] !== undefined ? r[startOffset + cIdx] : r[cIdx + 1];
-      const parsed = parseInt(cleanCellString(cellVal), 10);
-      scores[comp.code] = !isNaN(parsed) && parsed >= 0 ? parsed : 0;
+    referentielCompetences.forEach((comp) => {
+      const targetColIdx = effectiveMapping.get(comp.code);
+      if (targetColIdx !== undefined && targetColIdx >= 0 && r[targetColIdx] !== undefined) {
+        const parsed = parseInt(cleanCellString(r[targetColIdx]), 10);
+        scores[comp.code] = !isNaN(parsed) && parsed >= 0 ? parsed : 0;
+      } else {
+        scores[comp.code] = 0;
+      }
     });
 
     cleanPayload.push(scores);
@@ -651,6 +791,8 @@ export const validateCompetencesScores = (rows, type = 'aptitudes', etudiantsLis
     stats: { total: dataRows.length, valides: cleanPayload.length, bloquants, alertes },
     anomalies,
     cleanPayload,
+    mapping: activeMappingList,
+    availableColumns,
   };
 };
 
