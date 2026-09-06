@@ -59,10 +59,38 @@ export const saveReferentielCompetence = async (competence) => {
     actif: competence.actif !== undefined ? competence.actif : true,
   };
   if (competence.id) payload.id = competence.id;
+  if (competence.intitule_moodle !== undefined) {
+    payload.intitule_moodle = competence.intitule_moodle ? String(competence.intitule_moodle).trim() : null;
+  }
 
   const { data, error } = await supabase
     .from('referentiel_competences')
     .upsert(payload, { onConflict: 'code' })
+    .select();
+  if (error) throw error;
+  return data;
+};
+
+// Enregistrement groupé (batch) des competences detectees depuis Moodle
+export const saveBatchReferentielCompetences = async (competencesList) => {
+  if (!competencesList || competencesList.length === 0) return [];
+
+  const payloads = competencesList.map((competence) => {
+    const payload = {
+      code: competence.code.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+      label: competence.label.trim(),
+      description: competence.description?.trim() || '',
+      ordre: Number(competence.ordre || 1),
+      actif: competence.actif !== undefined ? competence.actif : true,
+      intitule_moodle: competence.intitule_moodle ? String(competence.intitule_moodle).trim() : null,
+    };
+    if (competence.id) payload.id = competence.id;
+    return payload;
+  });
+
+  const { data, error } = await supabase
+    .from('referentiel_competences')
+    .upsert(payloads, { onConflict: 'code' })
     .select();
   if (error) throw error;
   return data;
