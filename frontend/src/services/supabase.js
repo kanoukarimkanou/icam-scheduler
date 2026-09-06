@@ -75,18 +75,15 @@ export const saveReferentielCompetence = async (competence) => {
 export const saveBatchReferentielCompetences = async (competencesList) => {
   if (!competencesList || competencesList.length === 0) return [];
 
-  const payloads = competencesList.map((competence) => {
-    const payload = {
-      code: competence.code.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'),
-      label: competence.label.trim(),
-      description: competence.description?.trim() || '',
-      ordre: Number(competence.ordre || 1),
-      actif: competence.actif !== undefined ? competence.actif : true,
-      intitule_moodle: competence.intitule_moodle ? String(competence.intitule_moodle).trim() : null,
-    };
-    if (competence.id) payload.id = competence.id;
-    return payload;
-  });
+  // Pas d'id ici : Postgres gere l'auto-increment via la colonne IDENTITY
+  const payloads = competencesList.map((competence) => ({
+    code: competence.code.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+    label: competence.label.trim(),
+    description: competence.description?.trim() || '',
+    ordre: Number(competence.ordre || 1),
+    actif: competence.actif !== undefined ? competence.actif : true,
+    intitule_moodle: competence.intitule_moodle ? String(competence.intitule_moodle).trim() : null,
+  }));
 
   const { data, error } = await supabase
     .from('referentiel_competences')
