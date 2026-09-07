@@ -1,12 +1,50 @@
+# name: Sauvegarde Automatique Supabase
+
+# on:
+#   # 1. Execution automatique chaque nuit a 2h00 UTC (4h00 heure de Paris en ete)
+#   schedule:
+#     # - cron: '0 2 * * *'
+#     - cron: '0 */6 * * *'
+
+#   # 2. Permet de declencher manuellement la sauvegarde depuis GitHub a tout moment
+#   workflow_dispatch:
+
+# jobs:
+#   backup:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Recuperation du code
+#         uses: actions/checkout@v4
+
+#       - name: Configuration de Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+
+#       - name: Installation des dependances
+#         run: npm install
+
+#       - name: Execution de la sauvegarde
+#         env:
+#           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+#         run: node backup.js
+
+#       - name: Archivage et conservation de la sauvegarde
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: supabase-backup-${{ github.run_id }}
+#           path: backup_*.sql
+#           retention-days: 30
+
 name: Sauvegarde Automatique Supabase
 
 on:
-  # 1. Execution automatique chaque nuit a 2h00 UTC (4h00 heure de Paris en ete)
+  # Execution automatique toutes les 3 heures (8 fois par jour)
   schedule:
-    # - cron: '0 2 * * *'
-    - cron: '0 */6 * * *'
+    - cron: '0 */3 * * *'
 
-  # 2. Permet de declencher manuellement la sauvegarde depuis GitHub a tout moment
+  # Permet toujours de declencher manuellement la sauvegarde a tout moment
   workflow_dispatch:
 
 jobs:
@@ -35,4 +73,4 @@ jobs:
         with:
           name: supabase-backup-${{ github.run_id }}
           path: backup_*.sql
-          retention-days: 30
+          retention-days: 7
