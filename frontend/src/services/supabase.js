@@ -149,14 +149,16 @@ export const normalizeSpecialiteKey = (spec, customCompetences = null) => {
     });
     if (found) return found.code;
   }
-
+  // Avant les autres règles
+  
   if (clean.includes('calcul') || clean.includes('simulation')) return 'calculs_simulation_numerique';
   if (clean.includes('essai') || clean.includes('caracterisation')) return 'essais_caracterisation';
   if (clean.includes('fab') || clean.includes('proto')) return 'fabrication_prototypage';
   if (clean.includes('conception') || clean.includes('meca')) return 'conception_mecanique';
   if (clean.includes('auto')) return 'automatique_automatisme';
   if (clean.includes('iot') || clean.includes('embarque')) return 'iot_systeme_embarque';
-  if (clean.includes('robot') || clean.includes('cobot')) return 'robot_cobot';
+  // if (clean.includes('robot') || clean.includes('cobot')) return 'robot_cobot';
+  if (clean.includes('systemes embarques') || clean.includes('objets connectes')) return 'robot_cobot';
   if (clean.includes('vision')) return 'vision';
   if (clean === 'ia' || clean.includes('intelligence')) return 'ia';
   if (clean.includes('ihm') || clean.includes('web') || clean.includes('mobile')) return 'ihm_appli_web_mobile';
@@ -394,7 +396,7 @@ export const findChefFromWishText = (wishText, chefsList) => {
   }
 
   // Damien Deroland : Cobotique / [D. DEROLAND]
-  if (raw.includes('deroland') || raw.includes('cobotique')) {
+  if (raw.includes('deroland') || raw.includes('objets connectes')) {
     const c = chefsList.find((ch) => ch.nom.toLowerCase().includes('deroland') || ch.nom.toLowerCase().startsWith('dero'));
     if (c) return c;
   }
