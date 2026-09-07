@@ -3,7 +3,8 @@ name: Sauvegarde Automatique Supabase
 on:
   # 1. Execution automatique chaque nuit a 2h00 UTC (4h00 heure de Paris en ete)
   schedule:
-    - cron: '0 2 * * *'
+    # - cron: '0 2 * * *'
+    - cron: '0 */6 * * *'
 
   # 2. Permet de declencher manuellement la sauvegarde depuis GitHub a tout moment
   workflow_dispatch:
@@ -34,4 +35,4 @@ jobs:
         with:
           name: supabase-backup-${{ github.run_id }}
           path: backup_*.sql
-          retention-days: 30cd
+          retention-days: 30
