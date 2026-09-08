@@ -34382,7 +34382,8 @@
 //     </>
 //   );
 // }
-
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Table,
@@ -35126,7 +35127,64 @@ export default function EvaluationsTable() {
       </div>
     );
   }
+  const handleExportEvaluationsExcelCouleurs = async () => {
+    try {
+      const NOTE_FILL_HEX = { A: '0E9F6E', B: '2563EB', C: 'D97706', D: 'E11D48' };
+      const chefsToExport = isChef && chefId ? chefs.filter((c) => c.id === chefId) : chefs;
 
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Evaluations');
+
+      ws.columns = [
+        { header: 'Etudiant', key: 'etudiant', width: 25 },
+        { header: 'Email', key: 'email', width: 32 },
+        ...chefsToExport.map((c) => ({ header: c.nom, key: `chef_${c.id}`, width: 16 })),
+      ];
+
+      visibleEtudiants.forEach((etud) => {
+        const rowData = {
+          etudiant: `${etud.nom} ${etud.prenom}`,
+          email: etud.adresse_email,
+        };
+
+        const aff = affectationsMap.get(etud.id);
+
+        chefsToExport.forEach((c) => {
+          const ev = getEval(etud.id, c.id);
+          const rankInfo = getRankInfo(etud.id, c.id);
+          const isAssignedToThisChef = aff?.chef_id === c.id;
+
+          const rankText = rankInfo
+            ? `${rankLabel(rankInfo.rank)}${isAssignedToThisChef ? ' ✓' : ''}`
+            : isAssignedToThisChef
+            ? 'HV ✓'
+            : '—';
+
+          rowData[`chef_${c.id}`] = ev?.note ? `${rankText} (${ev.note})` : rankText;
+        });
+
+        const row = ws.addRow(rowData);
+
+        chefsToExport.forEach((c, colIdx) => {
+          const ev = getEval(etud.id, c.id);
+          const fill = NOTE_FILL_HEX[ev?.note];
+          if (fill) {
+            const cell = row.getCell(colIdx + 3); // colonnes 1-2 = Etudiant/Email
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${fill}` } };
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+          }
+        });
+      });
+
+      ws.getRow(1).font = { bold: true };
+
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/octet-stream' });
+      saveAs(blob, `evaluations_matrice_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch (err) {
+      alert(`Erreur export: ${err.message}`);
+    }
+  };
   const rowMinHeight = density === 'compact' ? '44px' : '56px';
   const firstColWidth = density === 'compact' ? 184 : 208;
   const chefColWidth = density === 'compact' ? 84 : 100;
@@ -35914,6 +35972,16 @@ export default function EvaluationsTable() {
             >
               Exporter Notes
             </Button>
+            {isAdmin && (
+            <Button
+              variant="outline-success"
+              size="sm"
+              onClick={handleExportEvaluationsExcelCouleurs}
+              className="px-3 py-2 fw-semibold"
+            >
+              Exporter Notes (couleurs)
+            </Button>
+              )}
 
             {isAdmin && (
               <Button

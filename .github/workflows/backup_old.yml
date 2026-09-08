@@ -1,0 +1,24 @@
+name: Supabase Database Backup
+on:
+  schedule:
+    - cron: "0 2 * * 0" # Chaque dimanche à 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Postgres Client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Dump Database
+        run: |
+          mkdir -p backups
+          PGPASSWORD="${{ secrets.SUPABASE_DB_PASSWORD }}" pg_dump -h "${{ secrets.SUPABASE_DB_HOST }}" -U postgres -d postgres -F c -b -v -f "backups/backup_$(date +\%Y\%m\%d).dump"
+      - name: Commit Backup
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add backups/
+          git commit -m "Auto backup $(date +'%Y-%m-%d')" || exit 0
+          git push
