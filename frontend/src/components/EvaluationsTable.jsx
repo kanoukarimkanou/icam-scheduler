@@ -34844,6 +34844,41 @@ export default function EvaluationsTable() {
     }
   };
 
+
+  const handleAnnulerNote = async (etudiantId, cId) => {
+    const key = `${etudiantId}-${cId}`;
+    const commentaire = localFormData[key]?.commentaire || '';
+
+    setSavingKey(key);
+    setError(null);
+
+    try {
+      await saveEvaluation(cId, etudiantId, '', commentaire);
+
+      setEvaluations((prev) => {
+        const next = prev.filter(
+          (e) => !(e.etudiant_id === etudiantId && e.chef_de_projet_id === cId)
+        );
+        return [
+          ...next,
+          { etudiant_id: etudiantId, chef_de_projet_id: cId, note: '', commentaire },
+        ];
+      });
+
+      setLocalFormData((prev) => ({
+        ...prev,
+        [key]: { ...prev[key], note: '' },
+      }));
+
+      setSavedSuccessKey(null);
+    } catch (err) {
+      setError(err.message || "Erreur lors de l'annulation de la note.");
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
+
   const handleAssign = async (etudiantId, targetChefIdStr, cellChefId) => {
     setSavingAffectationId(etudiantId);
     setSavingAffectationChefId(cellChefId);
@@ -36231,7 +36266,7 @@ export default function EvaluationsTable() {
 
                       <div className="chef-card-body-row">
                         <Row className="g-3 align-items-end">
-                          <Col lg={3} md={4}>
+                          {/* <Col lg={3} md={4}>
                             <div className="chef-section-label">Note</div>
                             <Form.Select
                               size="sm"
@@ -36250,8 +36285,39 @@ export default function EvaluationsTable() {
                                 );
                               })}
                             </Form.Select>
+                          </Col> */}
+                        <Col lg={3} md={4}>
+                            <div className="chef-section-label">Note</div>
+                            <Form.Select
+                              size="sm"
+                              className="bg-dark text-white border-secondary fw-bold"
+                              value={formVal.note || ''}
+                              onChange={(e) => handleLocalChange(etud.id, chefId, 'note', e.target.value)}
+                            >
+                              <option value="">— Non note —</option>
+                              {NOTES_DISPONIBLES.map((n) => {
+                                const isBlocked = isGradeBlockedForStudent(n, etud.id);
+                                const maxVal = getGradeMax(n);
+                                return (
+                                  <option key={n} value={n} disabled={isBlocked}>
+                                    Note {n} {isBlocked ? `(Quota plein : max ${maxVal})` : ''}
+                                  </option>
+                                );
+                              })}
+                            </Form.Select>
+                            {formVal.note && (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="p-0 mt-1 text-danger"
+                                style={{ fontSize: '0.72rem' }}
+                                disabled={isSaving}
+                                onClick={() => handleAnnulerNote(etud.id, chefId)}
+                              >
+                                Annuler la note
+                              </Button>
+                            )}
                           </Col>
-
                           <Col lg={7} md={8}>
                             <div className="chef-section-label">Commentaire</div>
                             <Form.Control
