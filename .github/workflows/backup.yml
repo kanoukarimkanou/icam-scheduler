@@ -42,8 +42,9 @@ name: Sauvegarde Automatique Supabase
 on:
   # Execution automatique toutes les 3 heures (8 fois par jour)
   schedule:
-    - cron: '0 */3 * * *'
-
+    # - cron: '0 */3 * * *'
+    # - cron: '0 2 * * *'
+    - cron: '0 2 */5 * *'
   # Permet toujours de declencher manuellement la sauvegarde a tout moment
   workflow_dispatch:
 
